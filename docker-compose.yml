@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Backend API Server
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: telemedicine-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - AGORA_APP_ID=${AGORA_APP_ID}
+      - AGORA_APP_CERTIFICATE=${AGORA_APP_CERTIFICATE}
+      - TOKEN_EXPIRY_SECONDS=3600
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - telemedicine-network
+    volumes:
+      # Mount for development (hot reload)
+      - ./backend:/app
+      - /app/node_modules
+
+  # Optional: PostgreSQL for production
+  # Uncomment if you want to add database
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: telemedicine-db
+  #   environment:
+  #     - POSTGRES_DB=telemedicine
+  #     - POSTGRES_USER=telemedicine
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - telemedicine-network
+
+  # Optional: Redis for session storage
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: telemedicine-redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - telemedicine-network
+
+networks:
+  telemedicine-network:
+    driver: bridge
+
+# volumes:
+#   postgres-data:
+
+# Made with Bob
