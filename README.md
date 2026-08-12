@@ -2,6 +2,25 @@
 
 A production-ready React Native telemedicine video conferencing solution using Agora.io with optimized performance and minimal bottlenecks.
 
+## Deploy on Netlify (web client)
+
+This repo includes a static Agora web client (`public/`) and a serverless token API (`netlify/functions`) so one commit deploys to Netlify.
+
+1. Connect the GitHub repo in Netlify (build uses `netlify.toml` automatically).
+2. Set environment variables in Netlify:
+   - `AGORA_APP_ID`
+   - `AGORA_APP_CERTIFICATE`
+3. Deploy. Open the site URL, use two tabs with different UIDs to test a call.
+
+Local Netlify check (optional):
+
+```bash
+npm install
+npx netlify dev
+```
+
+Docker / Express API for local backend testing is unchanged (`docker-compose up` or `npm start` in `backend/`).
+
 ## 🎯 Features
 
 - ✅ **1-on-1 Video Consultations** - Doctor-patient video calls

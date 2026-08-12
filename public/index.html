@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telemedicine Video Test Client</title>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .status.idle { background: #e0e0e0; color: #666; }
+    .status.connecting { background: #fff3cd; color: #856404; }
+    .status.connected { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+
+    .config {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #5568d3;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #c82333;
+    }
+
+    .video-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .video-box {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .video-header {
+      background: #667eea;
+      color: white;
+      padding: 10px 15px;
+      font-weight: 600;
+    }
+
+    .video-content {
+      position: relative;
+      width: 100%;
+      padding-top: 75%; /* 4:3 aspect ratio */
+      background: #000;
+    }
+
+    .video-content > div {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 18px;
+    }
+
+    .logs {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      padding: 8px;
+      margin-bottom: 5px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .log-info { background: #e7f3ff; color: #004085; }
+    .log-success { background: #d4edda; color: #155724; }
+    .log-error { background: #f8d7da; color: #721c24; }
+    .log-warning { background: #fff3cd; color: #856404; }
+
+    @media (max-width: 768px) {
+      .video-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>YourHealthMatch</h1>
+      <p>Telemedicine video consult — open two tabs with different UIDs to test</p>
+      <div style="margin-top: 10px;">
+        Status: <span class="status idle" id="status">Idle</span>
+      </div>
+    </div>
+
+    <!-- Configuration -->
+    <div class="config">
+      <h2 style="margin-bottom: 15px;">Configuration</h2>
+      
+      <div class="form-group">
+        <label for="backendUrl">API URL:</label>
+        <input type="text" id="backendUrl" value="" placeholder="https://your-site.netlify.app">
+        <small style="color: #666;">Defaults to this site (Netlify). Use http://localhost:3000 for local Docker API.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="channelName">Channel Name:</label>
+        <input type="text" id="channelName" value="test_channel" placeholder="test_channel">
+      </div>
+
+      <div class="form-group">
+        <label for="uid">User ID (UID):</label>
+        <input type="number" id="uid" value="1" placeholder="1">
+        <small style="color: #666;">Use different UIDs on different devices (e.g., 1 and 2)</small>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role:</label>
+        <select id="role">
+          <option value="doctor">Doctor</option>
+          <option value="patient">Patient</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <button class="btn-primary" id="joinBtn" onclick="joinCall()">Join Call</button>
+        <button class="btn-danger" id="leaveBtn" onclick="leaveCall()" disabled>Leave Call</button>
+      </div>
+    </div>
+
+    <!-- Video Streams -->
+    <div class="video-container">
+      <div class="video-box">
+        <div class="video-header">📹 Local Video (You)</div>
+        <div class="video-content">
+          <div id="local-video" class="placeholder">Camera not started</div>
+        </div>
+      </div>
+
+      <div class="video-box">
+        <div class="video-header">📹 Remote Video (Other User)</div>
+        <div class="video-content">
+          <div id="remote-video" class="placeholder">Waiting for other user...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="logs">
+      <h3 style="margin-bottom: 10px;">Logs</h3>
+      <div id="logs"></div>
+    </div>
+  </div>
+
+  <script>
+    let client;
+    let localTracks = {
+      videoTrack: null,
+      audioTrack: null
+    };
+    let remoteUsers = {};
+
+    // Logging
+    function log(message, type = 'info') {
+      const logsDiv = document.getElementById('logs');
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logsDiv.insertBefore(entry, logsDiv.firstChild);
+      console.log(message);
+    }
+
+    function setStatus(status, text) {
+      const statusEl = document.getElementById('status');
+      statusEl.className = `status ${status}`;
+      statusEl.textContent = text;
+    }
+
+    // Join Call
+    async function joinCall() {
+      try {
+        setStatus('connecting', 'Connecting...');
+        log('Starting call...', 'info');
+
+        const backendUrl = (document.getElementById('backendUrl').value || window.location.origin).replace(/\/$/, '');
+        const channelName = document.getElementById('channelName').value;
+        const uid = parseInt(document.getElementById('uid').value);
+        const role = document.getElementById('role').value;
+
+        // Disable join button
+        document.getElementById('joinBtn').disabled = true;
+
+        // Step 1: Get token from backend
+        log('Requesting token from backend...', 'info');
+        const response = await fetch(`${backendUrl}/api/video/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appointmentId: 'test_appointment',
+            channelName: channelName,
+            uid: uid
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        log('✅ Token received from backend', 'success');
+
+        // Step 2: Create Agora client
+        log('Creating Agora client...', 'info');
+        client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+
+        // Step 3: Set up event handlers
+        client.on('user-published', async (user, mediaType) => {
+          log(`Remote user ${user.uid} published ${mediaType}`, 'info');
+          await client.subscribe(user, mediaType);
+          
+          if (mediaType === 'video') {
+            const remoteVideoDiv = document.getElementById('remote-video');
+            remoteVideoDiv.innerHTML = '';
+            user.videoTrack.play('remote-video');
+            log('✅ Remote video playing', 'success');
+          }
+          
+          if (mediaType === 'audio') {
+            user.audioTrack.play();
+            log('✅ Remote audio playing', 'success');
+          }
+
+          remoteUsers[user.uid] = user;
+        });
+
+        client.on('user-unpublished', (user, mediaType) => {
+          log(`Remote user ${user.uid} unpublished ${mediaType}`, 'warning');
+          if (mediaType === 'video') {
+            const remoteVideoDiv = document.getElementById('remote-video');
+            remoteVideoDiv.innerHTML = '<div class="placeholder">Waiting for other user...</div>';
+          }
+        });
+
+        client.on('user-left', (user) => {
+          log(`Remote user ${user.uid} left`, 'warning');
+          delete remoteUsers[user.uid];
+          const remoteVideoDiv = document.getElementById('remote-video');
+          remoteVideoDiv.innerHTML = '<div class="placeholder">Waiting for other user...</div>';
+        });
+
+        // Step 4: Join channel
+        log(`Joining channel: ${channelName}...`, 'info');
+        await client.join(data.appId, channelName, data.token, uid);
+        log('✅ Joined channel successfully', 'success');
+
+        // Step 5: Create local tracks
+        log('Starting camera and microphone...', 'info');
+        localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack();
+        log('✅ Camera and microphone started', 'success');
+
+        // Step 6: Play local video
+        const localVideoDiv = document.getElementById('local-video');
+        localVideoDiv.innerHTML = '';
+        localTracks.videoTrack.play('local-video');
+        log('✅ Local video playing', 'success');
+
+        // Step 7: Publish tracks
+        log('Publishing audio and video...', 'info');
+        await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+        log('✅ Published successfully', 'success');
+
+        setStatus('connected', 'Connected');
+        log(`🎉 Call started! You are ${role} with UID ${uid}`, 'success');
+        log('Waiting for other user to join...', 'info');
+
+        // Enable leave button
+        document.getElementById('leaveBtn').disabled = false;
+
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        setStatus('error', 'Error');
+        document.getElementById('joinBtn').disabled = false;
+        console.error('Join call error:', error);
+      }
+    }
+
+    // Leave Call
+    async function leaveCall() {
+      try {
+        log('Leaving call...', 'info');
+
+        // Close local tracks
+        if (localTracks.audioTrack) {
+          localTracks.audioTrack.close();
+          localTracks.audioTrack = null;
+        }
+        if (localTracks.videoTrack) {
+          localTracks.videoTrack.close();
+          localTracks.videoTrack = null;
+        }
+
+        // Leave channel
+        if (client) {
+          await client.leave();
+          client = null;
+        }
+
+        // Reset UI
+        document.getElementById('local-video').innerHTML = '<div class="placeholder">Camera not started</div>';
+        document.getElementById('remote-video').innerHTML = '<div class="placeholder">Waiting for other user...</div>';
+        
+        setStatus('idle', 'Idle');
+        log('✅ Left call successfully', 'success');
+
+        // Enable join button
+        document.getElementById('joinBtn').disabled = false;
+        document.getElementById('leaveBtn').disabled = true;
+
+      } catch (error) {
+        log(`❌ Error leaving call: ${error.message}`, 'error');
+        console.error('Leave call error:', error);
+      }
+    }
+
+    // Default API URL to this origin (works on Netlify)
+    document.getElementById('backendUrl').value = window.location.origin;
+
+    // Initial log
+    log('Client loaded. Configure settings and click "Join Call"', 'info');
+    log('Tip: Open this page in two browser tabs with different UIDs to test', 'info');
+  </script>
+</body>
+</html>
