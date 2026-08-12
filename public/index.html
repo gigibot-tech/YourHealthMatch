@@ -315,11 +315,16 @@
           })
         });
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(`Backend error: ${response.statusText}`);
+          const detail = data.error || data.message || response.statusText || `HTTP ${response.status}`;
+          throw new Error(
+            detail === 'Server configuration error'
+              ? 'Agora not configured on Netlify. Set AGORA_APP_ID and AGORA_APP_CERTIFICATE, then redeploy.'
+              : `Backend error: ${detail}`
+          );
         }
 
-        const data = await response.json();
         log('✅ Token received from backend', 'success');
 
         // Step 2: Create Agora client
