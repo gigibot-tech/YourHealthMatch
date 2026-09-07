@@ -4,6 +4,7 @@ import {
   bookAppointment,
   todayISODate,
 } from '../../store/appointments.js';
+import { escapeHtml } from '../../lib/html.js';
 
 export function openBookModal(host, { onDone } = {}) {
   const doctors = getDoctors();
@@ -23,14 +24,14 @@ export function openBookModal(host, { onDone } = {}) {
               ${doctors
                 .map(
                   (d) =>
-                    `<option value="${d.id}" ${d.id === doctorId ? 'selected' : ''}>${d.name} — ${d.specialty}</option>`
+                    `<option value="${escapeHtml(d.id)}" ${d.id === doctorId ? 'selected' : ''}>${escapeHtml(d.name)} — ${escapeHtml(d.specialty)}</option>`
                 )
                 .join('')}
             </select>
           </div>
           <div class="form-group">
             <label for="bk-date">Date</label>
-            <input type="date" id="bk-date" value="${date}" min="${todayISODate()}" />
+            <input type="date" id="bk-date" value="${escapeHtml(date)}" min="${escapeHtml(todayISODate())}" />
           </div>
           <div class="form-group">
             <label>Time slot</label>
@@ -40,7 +41,7 @@ export function openBookModal(host, { onDone } = {}) {
                   ? slots
                       .map(
                         (s) =>
-                          `<button type="button" class="slot-btn${s === selectedSlot ? ' selected' : ''}" data-slot="${s}">${s}</button>`
+                          `<button type="button" class="slot-btn${s === selectedSlot ? ' selected' : ''}" data-slot="${escapeHtml(s)}">${escapeHtml(s)}</button>`
                       )
                       .join('')
                   : '<span style="color:var(--color-text-muted)">No open slots</span>'
@@ -90,7 +91,7 @@ export function openBookModal(host, { onDone } = {}) {
         host.innerHTML = '';
         onDone?.();
       } catch (err) {
-        alert(err.message);
+        window.alert(err.message);
       }
     });
   };

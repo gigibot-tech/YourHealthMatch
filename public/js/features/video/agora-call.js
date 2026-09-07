@@ -7,6 +7,7 @@ import {
   clearVideoSession,
   channelFor,
 } from '../../store/appointments.js';
+import { escapeHtml } from '../../lib/html.js';
 
 let client = null;
 let localTracks = { videoTrack: null, audioTrack: null };
@@ -45,8 +46,15 @@ async function leaveCall(els) {
   log(els.logs, 'Left call', 'success');
 }
 
-async function joinCall(els, { channelName, uid, role }) {
+async function joinCall(els, { channelName, uid, role, appointment }) {
   try {
+    if (appointment && (appointment.status === 'cancelled' || appointment.status === 'completed')) {
+      throw new Error('This appointment is no longer available for video.');
+    }
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(channelName)) {
+      throw new Error('Invalid channel name.');
+    }
+
     setStatus(els.status, 'connecting', 'Connecting…');
     els.joinBtn.disabled = true;
     const backendUrl = (els.apiUrl.value || window.location.origin).replace(/\/$/, '');
@@ -144,7 +152,7 @@ export async function mountVideoCall(root) {
           <h1>Video Call</h1>
           <p class="sub">${
             appt
-              ? `${appt.patientName} · ${doc?.name || 'Doctor'} · ${appt.reason}`
+              ? `${escapeHtml(appt.patientName)} · ${escapeHtml(doc?.name || 'Doctor')} · ${escapeHtml(appt.reason)}`
               : 'Open from an appointment, or join a test channel.'
           }</p>
         </div>
@@ -159,7 +167,7 @@ export async function mountVideoCall(root) {
           </div>
           <div class="form-group">
             <label for="v-channel">Channel</label>
-            <input id="v-channel" type="text" value="${channel}" />
+            <input id="v-channel" type="text" value="${escapeHtml(channel)}" maxlength="64" />
           </div>
           <div class="form-group">
             <label for="v-uid">UID</label>
@@ -175,7 +183,7 @@ export async function mountVideoCall(root) {
 
       <div class="video-grid">
         <div class="video-box">
-          <div class="video-box-header">Local (${callRole})</div>
+          <div class="video-box-header">Local (${escapeHtml(callRole)})</div>
           <div class="video-frame"><div id="v-local" class="placeholder">Camera not started</div></div>
         </div>
         <div class="video-box">
@@ -208,12 +216,18 @@ export async function mountVideoCall(root) {
 
   log(els.logs, 'Video ready. Use two browsers with different UIDs to test.', 'info');
   if (appt) log(els.logs, `Session linked to ${channel}`, 'info');
+  if (appt && (appt.status === 'cancelled' || appt.status === 'completed')) {
+    log(els.logs, 'This appointment cannot be joined.', 'error');
+    els.joinBtn.disabled = true;
+  }
 
   els.joinBtn.addEventListener('click', () => {
+    const live = session?.appointmentId ? getAppointment(session.appointmentId) : appt;
     joinCall(els, {
       channelName: root.querySelector('#v-channel').value.trim(),
       uid: parseInt(root.querySelector('#v-uid').value, 10) || uid,
       role: callRole,
+      appointment: live,
     });
   });
 

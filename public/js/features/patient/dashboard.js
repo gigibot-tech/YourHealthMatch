@@ -13,11 +13,9 @@ import {
   subscribe,
 } from '../../store/appointments.js';
 
-function badge(status) {
-  const cls = status === 'confirmed' ? 'badge-confirmed' : status === 'pending' ? 'badge-pending' : 'badge-completed';
-  const label = status.charAt(0).toUpperCase() + status.slice(1);
-  return `<span class="badge ${cls}">${label}</span>`;
-}
+import { statusBadge } from '../../ui/statusBadge.js';
+import { bindCancelActions, cancelButtonHtml, cancelPolicyHint } from '../../ui/cancelControls.js';
+import { escapeHtml } from '../../lib/html.js';
 
 function renderContent(selectedDate) {
   const patient = getPatient();
@@ -31,8 +29,10 @@ function renderContent(selectedDate) {
     <div class="welcome-row">
       <div class="avatar">${patient.shortName.slice(0, 1)}</div>
       <div>
-        <h1 style="font-size:1.35rem;font-weight:700">${greeting()}, ${patient.shortName}</h1>
+        <h1 style="font-size:1.35rem;font-weight:700">${escapeHtml(greeting())}, ${escapeHtml(patient.shortName)}</h1>
         <p class="sub">Here's your health overview.</p>
+        <p class="policy-hint">${escapeHtml(cancelPolicyHint())}</p>
+        <p class="policy-hint">${escapeHtml(cancelPolicyHint())}</p>
       </div>
     </div>
 
@@ -59,8 +59,8 @@ function renderContent(selectedDate) {
       ${strip
         .map(
           (d) => `
-        <button type="button" class="date-chip${d.iso === selectedDate ? ' active' : ''}" data-date="${d.iso}">
-          <div class="day">${d.day}</div>
+        <button type="button" class="date-chip${d.iso === selectedDate ? ' active' : ''}" data-date="${escapeHtml(d.iso)}">
+          <div class="day">${escapeHtml(d.day)}</div>
           <div class="num">${d.dateNum}</div>
         </button>`
         )
@@ -79,18 +79,19 @@ function renderContent(selectedDate) {
             <div class="card appt-card">
               <div class="meta">
                 <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-                  <h3>${doc?.name || 'Doctor'}</h3>
-                  ${badge(a.status)}
+                    <h3>${escapeHtml(doc?.name || 'Doctor')}</h3>
+                    ${statusBadge(a.status)}
                 </div>
-                <div class="detail">${doc?.specialty || ''} · ${formatTime(a.time)}</div>
-                <div class="detail">${a.reason}</div>
+                <div class="detail">${escapeHtml(doc?.specialty || '')} · ${escapeHtml(formatTime(a.time))}</div>
+                <div class="detail">${escapeHtml(a.reason)}</div>
               </div>
               <div class="appt-actions">
                 ${
                   a.status === 'confirmed'
-                    ? `<button type="button" class="btn btn-primary btn-sm" data-join="${a.id}">Join Video</button>`
+                    ? `<button type="button" class="btn btn-primary btn-sm" data-join="${escapeHtml(a.id)}">Join Video</button>`
                     : `<button type="button" class="btn btn-ghost btn-sm" disabled>Awaiting confirm</button>`
                 }
+                ${cancelButtonHtml(a)}
               </div>
             </div>`;
               })
@@ -108,11 +109,11 @@ function renderContent(selectedDate) {
           <div class="card appt-card">
             <div class="meta">
               <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-                <h3>${doc?.name || 'Doctor'}</h3>
-                ${badge(a.status)}
+                <h3>${escapeHtml(doc?.name || 'Doctor')}</h3>
+                ${statusBadge(a.status)}
               </div>
-              <div class="detail">${formatApptDate(a.date)} at ${formatTime(a.time)}</div>
-              <div class="detail">${a.location}</div>
+              <div class="detail">${escapeHtml(formatApptDate(a.date))} at ${escapeHtml(formatTime(a.time))}</div>
+              <div class="detail">${escapeHtml(a.location)}</div>
             </div>
             <div class="appt-actions">
               <button type="button" class="btn btn-ghost btn-sm" data-goto-appts>View</button>

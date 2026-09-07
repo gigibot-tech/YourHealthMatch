@@ -10,11 +10,9 @@ import {
   setVideoSession,
   subscribe,
 } from '../../store/appointments.js';
-
-function badge(status) {
-  const cls = status === 'confirmed' ? 'badge-confirmed' : status === 'pending' ? 'badge-pending' : 'badge-completed';
-  return `<span class="badge ${cls}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
-}
+import { statusBadge } from '../../ui/statusBadge.js';
+import { bindCancelActions, cancelButtonHtml, cancelPolicyHint } from '../../ui/cancelControls.js';
+import { escapeHtml } from '../../lib/html.js';
 
 export function mountDoctorSchedule(root) {
   let selectedDate = todayISODate();
@@ -29,21 +27,22 @@ export function mountDoctorSchedule(root) {
       <div class="page-header">
         <div>
           <h1>Schedule</h1>
-          <p class="sub">${doctor.name} · clinic calendar</p>
+          <p class="sub">${escapeHtml(doctor.name)} · clinic calendar</p>
+          <p class="policy-hint">${escapeHtml(cancelPolicyHint())}</p>
         </div>
       </div>
       <div class="date-strip">
         ${strip
           .map(
             (d) => `
-          <button type="button" class="date-chip${d.iso === selectedDate ? ' active' : ''}" data-date="${d.iso}">
-            <div class="day">${d.day}</div>
+          <button type="button" class="date-chip${d.iso === selectedDate ? ' active' : ''}" data-date="${escapeHtml(d.iso)}">
+            <div class="day">${escapeHtml(d.day)}</div>
             <div class="num">${d.dateNum}</div>
           </button>`
           )
           .join('')}
       </div>
-      <h2 class="section-title">${strip.find((d) => d.iso === selectedDate)?.label || selectedDate}</h2>
+      <h2 class="section-title">${escapeHtml(strip.find((d) => d.iso === selectedDate)?.label || selectedDate)}</h2>
       ${
         list.length === 0
           ? `<div class="empty-state">No appointments this day.</div>`
@@ -53,20 +52,21 @@ export function mountDoctorSchedule(root) {
             <div class="card appt-card">
               <div class="meta">
                 <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-                  <h3>${a.patientName}</h3>
-                  ${badge(a.status)}
+                  <h3>${escapeHtml(a.patientName)}</h3>
+                  ${statusBadge(a.status)}
                 </div>
-                <div class="detail">${formatTime(a.time)} · ${a.reason}</div>
-                <div class="detail">${a.location}</div>
+                <div class="detail">${escapeHtml(formatTime(a.time))} · ${escapeHtml(a.reason)}</div>
+                <div class="detail">${escapeHtml(a.location)}</div>
               </div>
               <div class="appt-actions">
                 ${
                   a.status === 'pending'
-                    ? `<button type="button" class="btn btn-primary btn-sm" data-confirm="${a.id}">Confirm</button>`
+                    ? `<button type="button" class="btn btn-primary btn-sm" data-confirm="${escapeHtml(a.id)}">Confirm</button>`
                     : a.status === 'confirmed'
-                      ? `<button type="button" class="btn btn-primary btn-sm" data-join="${a.id}">Join Video</button>`
+                      ? `<button type="button" class="btn btn-primary btn-sm" data-join="${escapeHtml(a.id)}">Join Video</button>`
                       : ''
                 }
+                ${cancelButtonHtml(a)}
               </div>
             </div>`
               )
@@ -89,10 +89,16 @@ export function mountDoctorSchedule(root) {
 
     root.querySelectorAll('[data-confirm]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        confirmAppointment(btn.getAttribute('data-confirm'));
-        paint();
+        try {
+          confirmAppointment(btn.getAttribute('data-confirm'));
+          paint();
+        } catch (err) {
+          window.alert(err.message);
+        }
       });
     });
+
+    bindCancelActions(root, { onDone: paint });
 
     root.querySelectorAll('[data-join]').forEach((btn) => {
       btn.addEventListener('click', () => {

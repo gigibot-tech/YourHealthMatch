@@ -11,13 +11,11 @@ import {
   setVideoSession,
   subscribe,
 } from '../../store/appointments.js';
+import { statusBadge } from '../../ui/statusBadge.js';
+import { bindCancelActions, cancelButtonHtml, cancelPolicyHint } from '../../ui/cancelControls.js';
+import { escapeHtml } from '../../lib/html.js';
 
 const HOURS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
-
-function badge(status) {
-  const cls = status === 'confirmed' ? 'badge-confirmed' : status === 'pending' ? 'badge-pending' : 'badge-completed';
-  return `<span class="badge ${cls}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
-}
 
 function hourKey(time) {
   return `${time.slice(0, 2)}:00`;
@@ -42,8 +40,9 @@ function render(today) {
   return `
     <div class="page-header">
       <div>
-        <h1>${greeting()}, ${doctor.name.replace(', M.D.', '')}</h1>
-        <p class="sub">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} · Today’s clinic</p>
+        <h1>${escapeHtml(greeting())}, ${escapeHtml(doctor.name.replace(', M.D.', ''))}</h1>
+        <p class="sub">${escapeHtml(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }))} · Today’s clinic</p>
+        <p class="policy-hint">${escapeHtml(cancelPolicyHint())}</p>
       </div>
     </div>
 
@@ -73,8 +72,9 @@ function render(today) {
               .map(
                 (a) => `
               <div class="pending-chip">
-                <span><strong>${a.patientName}</strong> · ${formatTime(a.time)} · ${a.reason}</span>
-                <button type="button" class="btn btn-primary btn-sm" data-confirm="${a.id}">Confirm</button>
+                <span><strong>${escapeHtml(a.patientName)}</strong> · ${escapeHtml(formatTime(a.time))} · ${escapeHtml(a.reason)}</span>
+                <button type="button" class="btn btn-primary btn-sm" data-confirm="${escapeHtml(a.id)}">Confirm</button>
+                ${cancelButtonHtml(a)}
               </div>`
               )
               .join('')}
@@ -86,16 +86,17 @@ function render(today) {
       next
         ? `<div class="next-patient">
             <div class="eyebrow">Next patient</div>
-            <h2>${next.patientName}</h2>
-            <p class="reason">${next.reason} · ${formatTime(next.time)}</p>
+            <h2>${escapeHtml(next.patientName)}</h2>
+            <p class="reason">${escapeHtml(next.reason)} · ${escapeHtml(formatTime(next.time))}</p>
             <div class="row">
-              ${badge(next.status)}
+              ${statusBadge(next.status)}
               <div class="appt-actions">
                 ${
                   next.status === 'pending'
-                    ? `<button type="button" class="btn btn-primary" data-confirm="${next.id}">Confirm visit</button>`
-                    : `<button type="button" class="btn btn-primary" data-join="${next.id}">Join Video Call</button>`
+                    ? `<button type="button" class="btn btn-primary" data-confirm="${escapeHtml(next.id)}">Confirm visit</button>`
+                    : `<button type="button" class="btn btn-primary" data-join="${escapeHtml(next.id)}">Join Video Call</button>`
                 }
+                ${cancelButtonHtml(next)}
               </div>
             </div>
           </div>`
@@ -114,9 +115,9 @@ function render(today) {
                 ${items
                   .map(
                     (a) => `
-                  <button type="button" class="timeline-chip${a.status === 'pending' ? ' pending' : ''}" data-join-or-view="${a.id}" data-status="${a.status}">
-                    <strong>${a.patientName}</strong>
-                    ${a.reason} · ${formatTime(a.time)}
+                  <button type="button" class="timeline-chip${a.status === 'pending' ? ' pending' : ''}" data-join-or-view="${escapeHtml(a.id)}" data-status="${escapeHtml(a.status)}">
+                    <strong>${escapeHtml(a.patientName)}</strong>
+                    ${escapeHtml(a.reason)} · ${escapeHtml(formatTime(a.time))}
                   </button>`
                   )
                   .join('')}
@@ -134,16 +135,17 @@ function render(today) {
                 .map(
                   (a) => `
               <div class="queue-item">
-                <div class="name">${a.patientName} ${badge(a.status)}</div>
-                <div class="info">${formatTime(a.time)} · ${a.reason}</div>
+                <div class="name">${escapeHtml(a.patientName)} ${statusBadge(a.status)}</div>
+                <div class="info">${escapeHtml(formatTime(a.time))} · ${escapeHtml(a.reason)}</div>
                 <div class="appt-actions">
                   ${
                     a.status === 'pending'
-                      ? `<button type="button" class="btn btn-primary btn-sm" data-confirm="${a.id}">Confirm</button>`
+                      ? `<button type="button" class="btn btn-primary btn-sm" data-confirm="${escapeHtml(a.id)}">Confirm</button>`
                       : a.status === 'confirmed'
-                        ? `<button type="button" class="btn btn-primary btn-sm" data-join="${a.id}">Join</button>`
+                        ? `<button type="button" class="btn btn-primary btn-sm" data-join="${escapeHtml(a.id)}">Join</button>`
                         : ''
                   }
+                  ${cancelButtonHtml(a)}
                 </div>
               </div>`
                 )
@@ -167,10 +169,16 @@ export function mountDoctorDashboard(root) {
 
     root.querySelectorAll('[data-confirm]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        confirmAppointment(btn.getAttribute('data-confirm'));
-        paint();
+        try {
+          confirmAppointment(btn.getAttribute('data-confirm'));
+          paint();
+        } catch (err) {
+          window.alert(err.message);
+        }
       });
     });
+
+    bindCancelActions(root, { onDone: paint });
 
     const join = (id) => {
       setVideoSession({ appointmentId: id, role: 'doctor', uid: 2 });
@@ -186,8 +194,12 @@ export function mountDoctorDashboard(root) {
         const id = btn.getAttribute('data-join-or-view');
         const status = btn.getAttribute('data-status');
         if (status === 'pending') {
-          confirmAppointment(id);
-          paint();
+          try {
+            confirmAppointment(id);
+            paint();
+          } catch (err) {
+            window.alert(err.message);
+          }
         } else if (status === 'confirmed') {
           join(id);
         }
