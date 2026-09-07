@@ -2,6 +2,7 @@ import type { AppointmentLike, PolicyContext } from '$lib/domain/appointment/pol
 import { mayJoinVideo } from '$lib/domain/appointment/policies';
 import type { Role } from '$lib/domain/appointment/lifecycleEngine';
 import { FEATURES } from '$lib/config/clinicPolicy';
+import { API_PATHS, RemoteApiUnavailableError, postJson } from '$lib/adapters/httpApi';
 
 export function canJoinVideo(
 	appointment: AppointmentLike,
@@ -20,22 +21,23 @@ export async function fetchVideoToken(input: {
 	uid?: number;
 	apiBase?: string;
 }): Promise<{ token: string; appId: string; channelName: string; uid: number }> {
-	const base = (input.apiBase || (typeof window !== 'undefined' ? window.location.origin : '')).replace(
-		/\/$/,
-		''
-	);
-	const res = await fetch(`${base}/api/video/token`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			appointmentId: input.appointmentId,
-			channelName: input.channelName,
-			uid: input.uid ?? 0
-		})
-	});
-	const data = await res.json().catch(() => ({}));
-	if (!res.ok) {
-		const detail = data.error || data.message || res.statusText;
+	let result: { ok: boolean; data: Record<string, unknown> };
+	try {
+		result = await postJson(
+			API_PATHS.videoToken,
+			{
+				appointmentId: input.appointmentId,
+				channelName: input.channelName,
+				uid: input.uid ?? 0
+			},
+			{ override: input.apiBase }
+		);
+	} catch (e) {
+		if (e instanceof RemoteApiUnavailableError) throw e;
+		throw new Error(e instanceof Error ? e.message : 'Token fetch failed');
+	}
+	if (!result.ok) {
+		const detail = String(result.data.error || result.data.message || 'Token request failed');
 		throw new Error(
 			detail === 'Server configuration error'
 				? 'Agora not configured. Set AGORA_APP_ID and AGORA_APP_CERTIFICATE on Netlify.'
@@ -43,10 +45,10 @@ export async function fetchVideoToken(input: {
 		);
 	}
 	return {
-		token: data.token,
-		appId: data.appId,
-		channelName: data.channelName || input.channelName,
-		uid: data.uid ?? input.uid ?? 0
+		token: String(result.data.token ?? ''),
+		appId: String(result.data.appId ?? ''),
+		channelName: String(result.data.channelName || input.channelName),
+		uid: Number(result.data.uid ?? input.uid ?? 0)
 	};
 }
 

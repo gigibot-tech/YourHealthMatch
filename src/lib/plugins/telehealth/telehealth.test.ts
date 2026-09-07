@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { canJoinVideo } from './telehealth';
+import { canJoinVideo, fetchVideoToken } from './telehealth';
+import { RemoteApiUnavailableError } from '$lib/adapters/httpApi';
 
 describe('telehealth', () => {
 	it('blocks join when not confirmed', () => {
@@ -16,5 +17,11 @@ describe('telehealth', () => {
 			'doctor'
 		);
 		expect(r.ok).toBe(true);
+	});
+
+	it('refuses token fetch when this host has no API origin', async () => {
+		await expect(
+			fetchVideoToken({ appointmentId: 'appt_1', channelName: 'ch' })
+		).rejects.toBeInstanceOf(RemoteApiUnavailableError);
 	});
 });

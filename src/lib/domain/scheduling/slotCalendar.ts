@@ -1,5 +1,7 @@
 import type { WeeklyHours } from '../practice/practiceProfileDefaults';
 
+export const SLOT_STEP_MINUTES = 30;
+
 export type Slot = { date: string; time: string };
 
 export type DateChip = {
@@ -73,7 +75,7 @@ export function openSlots(input: {
 	stepMin?: number;
 }): Slot[] {
 	const days = input.days ?? 7;
-	const stepMin = input.stepMin ?? 30;
+	const stepMin = input.stepMin ?? SLOT_STEP_MINUTES;
 	const booked = input.booked;
 	const results: Slot[] = [];
 

@@ -1,8 +1,9 @@
 /**
- * Application barrel — one import path for routes; each service stays its own file.
+ * Application barrel — routes import use-cases here, not adapters.
  */
 export { matchingService } from './matchingService';
 export { appointmentService, type BookingDraft } from './appointmentService';
+export { availabilityService } from './availabilityService';
 export { practiceService } from './practiceService';
 export { interestService } from './interestService';
 export {
@@ -11,9 +12,3 @@ export {
 	type SuggestionNotifyPayload
 } from './externalSystemService';
 export { registerTransitionHook } from './transitionHooks';
-export {
-	patientRepo,
-	practiceRepo,
-	appointmentRepo,
-	interestRepo
-} from '$lib/adapters/localRepos';

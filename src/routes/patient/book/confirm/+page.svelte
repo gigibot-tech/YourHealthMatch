@@ -25,6 +25,9 @@
 	const practice = $derived(
 		$bookingDraft.practiceId ? practiceService.get($bookingDraft.practiceId) : null
 	);
+	const doctorName = $derived(
+		practice?.doctors.find((d) => d.id === $bookingDraft.doctorId)?.name
+	);
 </script>
 
 <div class="page-header">
@@ -33,7 +36,7 @@
 </div>
 
 <div class="card">
-	<p><strong>{practice?.name}</strong></p>
+	<p><strong>{practice?.name}</strong>{doctorName ? ` · ${doctorName}` : ''}</p>
 	<p class="detail">
 		{$bookingDraft.slot?.date} · {$bookingDraft.slot?.time} · {$bookingDraft.modality}
 	</p>

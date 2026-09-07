@@ -2,18 +2,23 @@
  * localStorage adapters — persistence only. Types live in domain.
  */
 import { safeMerge } from '$lib/safeMerge';
-import type { Appointment } from '$lib/domain/appointment/Appointment';
+import { channelFor, type Appointment } from '$lib/domain/appointment/Appointment';
 import type { Practice } from '$lib/domain/practice/practiceProfileDefaults';
 import { practiceProfileDefaults } from '$lib/domain/practice/practiceProfileDefaults';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 import { patientRequirementsDefaults } from '$lib/domain/matching/matchDefaults';
 import type { Interest } from '$lib/domain/interest/interest';
+import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 
 export type { Appointment };
 
 type Listener<T> = (all: T[]) => void;
 
-function createLocalRepo<T extends { id: string }>(storageKey: string, seed: () => T[]) {
+export function createLocalRepo<T extends { id: string }>(
+	storageKey: string,
+	seed: () => T[],
+	opts?: { reseedIfEmpty?: boolean }
+) {
 	let cache: T[] | null = null;
 	const listeners = new Set<Listener<T>>();
 
@@ -33,6 +38,14 @@ function createLocalRepo<T extends { id: string }>(storageKey: string, seed: () 
 				}
 				const parsed = JSON.parse(raw);
 				cache = Array.isArray(parsed) ? parsed : seed();
+				if (opts?.reseedIfEmpty && cache!.length === 0) {
+					cache = seed();
+					try {
+						localStorage.setItem(storageKey, JSON.stringify(cache));
+					} catch {
+						/* ignore */
+					}
+				}
 				return cache!;
 			}
 		} catch {
@@ -77,6 +90,9 @@ function createLocalRepo<T extends { id: string }>(storageKey: string, seed: () 
 		},
 		replaceAll(items: T[]) {
 			persist(items.slice());
+		},
+		remove(id: string) {
+			persist(load().filter((x) => x.id !== id));
 		},
 		subscribe(listener: Listener<T>): () => void {
 			listeners.add(listener);
@@ -139,8 +155,83 @@ function seedPractices(): Practice[] {
 	];
 }
 
+function addDaysISO(days: number): string {
+	const d = new Date();
+	d.setDate(d.getDate() + days);
+	return toISODate(d);
+}
+
+function seedAppointments(): Appointment[] {
+	const today = toISODate(new Date());
+	const demo: Omit<Appointment, 'channel'>[] = [
+		{
+			id: 'appt_today_1',
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			patientId: 'pat_demo',
+			patientName: 'John Doe',
+			reason: 'Examination for eyesight',
+			date: today,
+			time: '10:00',
+			status: 'confirmed',
+			modality: 'video'
+		},
+		{
+			id: 'appt_today_2',
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			patientId: 'pat_maria',
+			patientName: 'Maria Lopez',
+			reason: 'Post-op review',
+			date: today,
+			time: '11:00',
+			status: 'confirmed',
+			modality: 'video'
+		},
+		{
+			id: 'appt_today_3',
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			patientId: 'pat_alex',
+			patientName: 'Alex Kim',
+			reason: 'Vision screening',
+			date: today,
+			time: '14:00',
+			status: 'requested',
+			modality: 'video'
+		},
+		{
+			id: 'appt_seed_2',
+			practiceId: 'prac_turner',
+			doctorId: 'doc_chen',
+			patientId: 'pat_demo',
+			patientName: 'John Doe',
+			reason: 'Skin check',
+			date: addDaysISO(5),
+			time: '14:30',
+			status: 'confirmed',
+			modality: 'in_person'
+		},
+		{
+			id: 'appt_seed_3',
+			practiceId: 'prac_davis',
+			doctorId: 'doc_davis',
+			patientId: 'pat_demo',
+			patientName: 'John Doe',
+			reason: 'Annual checkup',
+			date: addDaysISO(2),
+			time: '09:00',
+			status: 'requested',
+			modality: 'in_person'
+		}
+	];
+	return demo.map((a) => ({ ...a, channel: channelFor(a.id) }));
+}
+
 export const practiceRepo = createLocalRepo<Practice>('yhm_practices_v1', seedPractices);
-export const appointmentRepo = createLocalRepo<Appointment>('yhm_appointments_v1', () => []);
+export const appointmentRepo = createLocalRepo<Appointment>('yhm_appointments_v1', seedAppointments, {
+	reseedIfEmpty: true
+});
 export const interestRepo = createLocalRepo<Interest>('yhm_interest_v1', () => []);
 const PATIENT_KEY = 'yhm_patient_reqs_v1';
 const patientListeners = new Set<(r: PatientRequirements) => void>();

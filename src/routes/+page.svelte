@@ -4,18 +4,25 @@
 
 	function pick(r: 'patient' | 'doctor') {
 		role.set(r);
-		goto(r === 'patient' ? '/patient/language' : '/doctor/dashboard');
+		goto(r === 'patient' ? '/patient/dashboard' : '/doctor/dashboard');
 	}
 </script>
 
-<div class="hero">
-	<div class="hero-card">
-		<p class="detail">International patients ↔ suitable practices</p>
+<div class="role-picker">
+	<div class="role-card-wrap">
 		<h1>YourHealthMatch</h1>
-		<p>Find doctors by language, insurance, specialty, and availability — then book or join the waitlist.</p>
+		<p>Find the right doctor — then book, waitlist, or join a video visit.</p>
 		<div class="role-grid">
-			<button class="btn btn-primary" type="button" onclick={() => pick('patient')}>I am a patient</button>
-			<button class="btn" type="button" onclick={() => pick('doctor')}>I am a doctor / practice</button>
+			<button class="role-choice" type="button" onclick={() => pick('patient')}>
+				<div class="role-icon">👤</div>
+				<strong>I'm a patient</strong>
+				<span>Match, book, and join visits</span>
+			</button>
+			<button class="role-choice" type="button" onclick={() => pick('doctor')}>
+				<div class="role-icon">🩺</div>
+				<strong>I'm a doctor</strong>
+				<span>Confirm requests and run clinic</span>
+			</button>
 		</div>
 	</div>
 </div>

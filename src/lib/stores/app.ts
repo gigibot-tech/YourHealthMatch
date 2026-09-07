@@ -1,5 +1,6 @@
 import { readable, writable } from 'svelte/store';
 import { appointmentRepo, patientRepo, practiceRepo } from '$lib/adapters/localRepos';
+import { availabilityStore } from '$lib/adapters/availabilityStore';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 import type { BookingDraft } from '$lib/application/services';
 import { patientRequirementsDefaults } from '$lib/domain/matching/matchDefaults';
@@ -9,6 +10,10 @@ export const appointments = readable(appointmentRepo.getAll(), (set) =>
 );
 
 export const practices = readable(practiceRepo.getAll(), (set) => practiceRepo.subscribe(set));
+
+export const availability = readable(availabilityStore.list(), (set) =>
+	availabilityStore.subscribe(() => set(availabilityStore.list()))
+);
 
 export const requirements = readable(patientRepo.get(), (set) => patientRepo.subscribe(set));
 

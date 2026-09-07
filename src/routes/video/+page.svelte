@@ -66,7 +66,7 @@
 	<p class="sub">Status: {status}</p>
 </div>
 
-{#if error}<p style="color:var(--danger)">{error}</p>{/if}
+{#if error}<p class="detail" style="color:var(--color-danger)">{error}</p>{/if}
 
 <div class="video-grid">
 	<div class="video-pane" bind:this={localEl}>Camera not started</div>

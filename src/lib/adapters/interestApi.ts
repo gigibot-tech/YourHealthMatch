@@ -1,14 +1,11 @@
 import type { Interest } from '$lib/domain/interest/interest';
+import { API_PATHS, postJson } from './httpApi';
 
-/** Infrastructure: optional remote sync. Failures are swallowed (local-first). */
+/** Optional remote sync. Local waitlist stays canonical; failures are ignored. */
 export async function syncInterestRemote(interest: Interest): Promise<void> {
 	try {
-		await fetch('/api/interest', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(interest)
-		});
+		await postJson(API_PATHS.interest, interest);
 	} catch {
-		/* offline / local ok */
+		/* offline / Tauri without VITE_API_BASE / local ok */
 	}
 }

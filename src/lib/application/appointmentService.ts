@@ -7,14 +7,12 @@ import {
 	type Role
 } from '$lib/domain/appointment/lifecycleEngine';
 import { channelFor, type Appointment } from '$lib/domain/appointment/Appointment';
-import {
-	hasClash,
-	openSlots,
-	toISODate,
-	type Slot
-} from '$lib/domain/scheduling/slotCalendar';
+import { hasClash, toISODate, type Slot } from '$lib/domain/scheduling/slotCalendar';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 import { appointmentRepo, practiceRepo } from '$lib/adapters/localRepos';
+import { availabilityStore } from '$lib/adapters/availabilityStore';
+import { availabilityService } from './availabilityService';
+import { toSlot } from '$lib/domain/scheduling/availability';
 import { runTransitionHooks } from './transitionHooks';
 
 export type BookingDraft = {
@@ -38,6 +36,17 @@ export const appointmentService = {
 	book(draft: BookingDraft, patientId = 'pat_demo', patientName = 'Patient'): Appointment {
 		const practice = practiceRepo.get(draft.practiceId);
 		if (!practice) throw new Error('Practice not found');
+		const doctorId = draft.doctorId;
+		if (!doctorId) throw new Error('Pick a doctor before booking');
+		const offered = availabilityStore
+			.list({
+				practiceId: draft.practiceId,
+				doctorId,
+				fromDate: draft.slot.date,
+				toDate: draft.slot.date
+			})
+			.some((offer) => offer.time === draft.slot.time);
+		if (!offered) throw new Error('This doctor has not opened that time');
 		if (hasClash(draft.slot, bookedSlots(draft.practiceId))) {
 			throw new Error('That slot is already booked');
 		}
@@ -99,15 +108,14 @@ export const appointmentService = {
 		};
 	},
 
-	openSlotsForPractice(practiceId: string, fromDate = toISODate(new Date()), days = 7) {
-		const p = practiceRepo.get(practiceId);
-		if (!p) return [];
-		return openSlots({
-			weeklyHours: p.weeklyHours,
-			explicitSlots: p.availabilitySlots,
-			booked: bookedSlots(practiceId),
-			fromDate,
-			days
-		});
+	openSlotsForPractice(
+		practiceId: string,
+		fromDate = toISODate(new Date()),
+		days = 7,
+		doctorId?: string
+	) {
+		return availabilityService
+			.listBookable({ practiceId, doctorId, fromDate, days })
+			.map(toSlot);
 	}
 };
