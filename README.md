@@ -4,12 +4,10 @@ Matching-first telemedicine for international patients and practices. Patients d
 
 ## Patient beginning
 
-1. **Role** (`/`) — patient or doctor.
-2. **Language** (`/patient/language`) — preferred language (pre-fills matching).
-3. **Systems** (`/patient/systems`) — which portals you already use; optional “suggest other” emails `contact@yourhealthmatch.com`.
-4. **Requirements** (`/patient/requirements`) — language, specialty, insurance, city, PLZ, new-patient. Matching will not start until required fields are set.
-5. **Match** (`/patient/match`) — ranked practices, waitlist if none, shortcuts into other apps.
-6. **Book → confirm → dashboard** — pick a slot, then join video only when the appointment allows it.
+1. **Role** (`/`) — patient or doctor (start onboarding, or skip onboarding for the Greifswald demo clinic).
+2. **Profile** (`/patient/requirements`) — language, match requirements, and booking apps you already use. Language and systems are not separate tabs.
+3. **Match** (`/patient/match`) — ranked practices from your profile; edit requirements from that page. Waitlist if none; shortcuts into other apps.
+4. **Book → confirm → dashboard** — pick a slot the doctor opened, then join video only when the appointment allows it.
 
 Doctors land on the queue (`/doctor/dashboard`), then practice profile and schedule.
 

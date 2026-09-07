@@ -1,13 +1,32 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { requirements, patchRequirements } from '$lib/stores/app';
-	import { matchingService, startSession } from '$lib/application/services';
+	import { preferences, requirements, patchRequirements } from '$lib/stores/app';
+	import { matchingService } from '$lib/application/services';
 	import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
+	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
+	import SystemsPrefs from '$lib/components/patient/SystemsPrefs.svelte';
+
+	const LANGUAGES = [
+		'English',
+		'Deutsch',
+		'Arabic',
+		'German',
+		'Turkish',
+		'Ukrainian',
+		'Russian'
+	];
 
 	let form = $state({ ...$requirements });
 
+	onMount(() => {
+		const id = window.location.hash.replace('#', '');
+		if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
+
 	function save(e: Event) {
 		e.preventDefault();
+		if (form.language) preferences.set({ language: form.language });
 		const saved = patchRequirements(form as Partial<PatientRequirements>);
 		const missing = matchingService.isPatientReady(saved);
 		if (missing.length) {
@@ -16,22 +35,25 @@
 		}
 		goto('/patient/match');
 	}
-
-	function skipWithLocalData() {
-		goto(startSession({ role: 'patient', skipOnboarding: true }));
-	}
 </script>
 
 <div class="page-header">
-	<h1>Your requirements</h1>
-	<p class="sub">Everything matching needs — no match-critical fields later in the flow.</p>
+	<h1>Profile</h1>
+	<p class="sub">Language, match requirements, and the booking apps you already use.</p>
 </div>
 
-<form class="card" onsubmit={save}>
+<form class="card" id="requirements" onsubmit={save}>
+	<h2 class="section-title" style="margin-top:0">Match requirements</h2>
+	<p class="sub">Matching will not run until these are filled.</p>
 	<div class="field-row">
-		<div class="field">
-			<label for="language">Language</label>
-			<input id="language" bind:value={form.language} required />
+		<div class="field" id="language">
+			<label for="lang">Preferred language</label>
+			<select id="lang" bind:value={form.language} required>
+				<option value="">Select…</option>
+				{#each LANGUAGES as lang}
+					<option>{lang}</option>
+				{/each}
+			</select>
 		</div>
 		<div class="field">
 			<label for="specialty">Specialty</label>
@@ -96,8 +118,8 @@
 	</div>
 	<div class="actions">
 		<button class="btn btn-primary" type="submit">Find matches</button>
-		<button class="btn btn-ghost" type="button" onclick={skipWithLocalData}
-			>Skip — use local data</button
-		>
+		<SkipOnboardingButton role="patient" />
 	</div>
 </form>
+
+<SystemsPrefs />

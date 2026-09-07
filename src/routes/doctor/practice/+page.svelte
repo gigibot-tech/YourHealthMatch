@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { interestService, practiceService, startSession } from '$lib/application/services';
+	import { interestService, practiceService } from '$lib/application/services';
+	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
 	import { practices } from '$lib/stores/app';
 	import type { Practice } from '$lib/domain/practice/practiceProfileDefaults';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
@@ -52,10 +52,6 @@
 			onboardingStatus: 'available_for_matching'
 		});
 		savedMsg = 'Profile saved — eligible for matching.';
-	}
-
-	function skipWithLocalData() {
-		goto(startSession({ role: 'doctor', skipOnboarding: true }));
 	}
 </script>
 
@@ -124,9 +120,7 @@
 	</div>
 	<div class="actions">
 		<button class="btn btn-primary" type="submit">Save profile</button>
-		<button class="btn btn-ghost" type="button" onclick={skipWithLocalData}
-			>Skip — use local data</button
-		>
+		<SkipOnboardingButton role="doctor" />
 	</div>
 	{#if savedMsg}<p class="detail">{savedMsg}</p>{/if}
 </form>
