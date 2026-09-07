@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = "public"
+  publish = "build"
   functions = "netlify/functions"
 
 [build.environment]
@@ -9,6 +9,18 @@
 [functions]
   node_bundler = "esbuild"
   included_files = ["backend/**"]
+
+[[redirects]]
+  from = "/api/interest"
+  to = "/.netlify/functions/interest"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/interest/*"
+  to = "/.netlify/functions/interest/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/api/*"
@@ -21,3 +33,9 @@
   to = "/.netlify/functions/api/health"
   status = 200
   force = true
+
+# SPA fallback for SvelteKit adapter-static
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

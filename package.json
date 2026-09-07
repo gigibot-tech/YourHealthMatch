@@ -1,18 +1,41 @@
 {
   "name": "your-health-match",
-  "version": "1.0.0",
-  "description": "YourHealthMatch telemedicine video — Netlify web client + Agora token API",
   "private": true,
+  "version": "1.0.0",
+  "description": "YourHealthMatch — matching + appointments + Agora telehealth (SvelteKit + Netlify)",
+  "type": "module",
   "scripts": {
-    "build": "node -e \"console.log('Static public/ + Netlify Functions ready')\"",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "start": "npm --prefix backend start",
-    "dev:api": "npm --prefix backend run dev"
+    "dev:api": "npm --prefix backend run dev",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "agora-access-token": "^2.0.4",
+    "agora-rtc-sdk-ng": "^4.23.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/kit": "^2.63.0",
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
+    "@tauri-apps/cli": "^2.4.0",
+    "@types/node": "^22.13.10",
+    "svelte": "^5.56.1",
+    "svelte-check": "^4.6.0",
+    "typescript": "^5.8.2",
+    "vite": "^8.0.16",
+    "vitest": "^3.0.9"
   },
   "engines": {
     "node": ">=18",
