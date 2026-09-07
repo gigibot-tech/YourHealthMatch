@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { startSession } from '$lib/application/services';
 	import { externalSystemService } from '$lib/application/externalSystemService';
 	import { SUGGEST_OTHER_ID } from '$lib/domain/externalSystems/catalog';
 
@@ -45,6 +46,10 @@
 
 	function skip() {
 		goto('/patient/requirements');
+	}
+
+	function skipWithLocalData() {
+		goto(startSession({ role: 'patient', skipOnboarding: true }));
 	}
 </script>
 
@@ -95,6 +100,9 @@
 	<div class="actions">
 		<button class="btn btn-primary" type="button" onclick={continueNext}>Continue</button>
 		<button class="btn btn-ghost" type="button" onclick={skip}>Skip for now</button>
+		<button class="btn btn-ghost" type="button" onclick={skipWithLocalData}
+			>Skip — use local data</button
+		>
 	</div>
 </div>
 

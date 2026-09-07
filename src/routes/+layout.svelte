@@ -24,6 +24,9 @@
 	];
 
 	let links = $derived($role === 'doctor' ? doctorLinks : patientLinks);
+	let showShell = $derived(
+		($role === 'patient' || $role === 'doctor') && $page.url.pathname !== '/'
+	);
 
 	function isActive(href: string) {
 		const path = $page.url.pathname;
@@ -42,7 +45,7 @@
 	}
 </script>
 
-{#if $role === 'patient' || $role === 'doctor'}
+{#if showShell}
 	<div class="mobile-bar">
 		<strong>YourHealthMatch</strong>
 		<button type="button" onclick={() => (menuOpen = !menuOpen)}>Menu</button>

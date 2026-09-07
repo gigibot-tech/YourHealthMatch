@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { matchingService, interestService, practiceService } from '$lib/application/services';
-	import { bookingDraft, matchResults, requirements } from '$lib/stores/app';
+	import { matchingService, interestService, practiceService, factsService } from '$lib/application/services';
+	import { bookingDraft, matchResults, requirements, appointments } from '$lib/stores/app';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
+	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
 
 	let loading = $state(true);
 	let email = $state('');
@@ -60,12 +61,31 @@
 			notice = e instanceof Error ? e.message : 'Could not save interest';
 		}
 	}
+
+	let factCards = $derived.by(() => {
+		void $appointments;
+		void $requirements;
+		return factsService.forPatient();
+	});
+	let factHeading = $derived(
+		$appointments.some(
+			(a) =>
+				a.patientId === 'pat_demo' &&
+				(a.status === 'requested' || a.status === 'confirmed')
+		)
+			? 'While you wait'
+			: 'Before you book'
+	);
 </script>
 
 <div class="page-header">
 	<h1>Matches</h1>
 	<p class="sub">Ranked by language, specialty, insurance, location, and availability.</p>
 </div>
+
+{#if factCards.length}
+	<FactsCarousel cards={factCards} heading={factHeading} compact />
+{/if}
 
 {#if loading}
 	<p class="detail">Finding practices…</p>

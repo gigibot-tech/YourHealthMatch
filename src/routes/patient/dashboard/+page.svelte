@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { appointmentService, practiceService } from '$lib/application/services';
-	import { appointments } from '$lib/stores/app';
+	import { appointmentService, practiceService, factsService } from '$lib/application/services';
+	import { appointments, requirements } from '$lib/stores/app';
 	import { dateStrip, toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import { goto } from '$app/navigation';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
+	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
 	import {
 		badgeClass,
 		cancelPolicyHint,
@@ -31,6 +32,14 @@
 	let pastVisits = $derived(mine.filter((a) => a.status === 'completed').length);
 	let selectedLabel = $derived(strip.find((d) => d.iso === selectedDate)?.label || selectedDate);
 	let helloName = $derived(firstName(mine[0]?.patientName || 'John'));
+	let factCards = $derived.by(() => {
+		void $appointments;
+		void $requirements;
+		return factsService.forPatient(PATIENT_ID);
+	});
+	let factHeading = $derived(
+		upcoming.length ? 'While you wait' : 'Before you book'
+	);
 
 	function doctorLine(practiceId: string, doctorId?: string) {
 		const practice = practiceService.get(practiceId);
@@ -86,6 +95,8 @@
 		<div><div class="label">Past visits</div><div class="value">{pastVisits}</div></div>
 	</div>
 </div>
+
+<FactsCarousel cards={factCards} heading={factHeading} />
 
 <div class="date-strip">
 	{#each strip as d}

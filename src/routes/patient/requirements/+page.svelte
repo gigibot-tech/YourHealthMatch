@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { requirements, patchRequirements } from '$lib/stores/app';
-	import { matchingService } from '$lib/application/services';
+	import { matchingService, startSession } from '$lib/application/services';
 	import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 
 	let form = $state({ ...$requirements });
@@ -15,6 +15,10 @@
 			return;
 		}
 		goto('/patient/match');
+	}
+
+	function skipWithLocalData() {
+		goto(startSession({ role: 'patient', skipOnboarding: true }));
 	}
 </script>
 
@@ -90,5 +94,10 @@
 			<option value="video">Video</option>
 		</select>
 	</div>
-	<button class="btn btn-primary" type="submit">Find matches</button>
+	<div class="actions">
+		<button class="btn btn-primary" type="submit">Find matches</button>
+		<button class="btn btn-ghost" type="button" onclick={skipWithLocalData}
+			>Skip — use local data</button
+		>
+	</div>
 </form>

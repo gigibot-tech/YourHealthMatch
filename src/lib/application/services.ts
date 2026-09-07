@@ -12,3 +12,5 @@ export {
 	type SuggestionNotifyPayload
 } from './externalSystemService';
 export { registerTransitionHook } from './transitionHooks';
+export { startSession, applyDemoPatientData, type SessionRole, type StartSessionInput } from './session';
+export { factsService } from './factsService';

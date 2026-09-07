@@ -30,9 +30,9 @@ if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'func
 
 role.subscribe((r) => {
 	try {
-		if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function' && r) {
-			localStorage.setItem('yhm_role', r);
-		}
+		if (typeof localStorage === 'undefined' || typeof localStorage.setItem !== 'function') return;
+		if (r) localStorage.setItem('yhm_role', r);
+		else localStorage.removeItem('yhm_role');
 	} catch {
 		/* ignore */
 	}

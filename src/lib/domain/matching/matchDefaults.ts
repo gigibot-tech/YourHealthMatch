@@ -35,6 +35,20 @@ export const patientRequirementsDefaults: PatientRequirements = {
 	city: ''
 };
 
+/** Local demo patient — complete enough to match seeded Greifswald practices. */
+export const demoPatientRequirements: PatientRequirements = {
+	language: 'English',
+	specialty: 'Ophthalmology',
+	insurance: 'GKV',
+	location: 'Greifswald',
+	newPatient: true,
+	preferredWindow: '',
+	modality: 'video',
+	postcode: '17489',
+	krankenkasse: 'TK',
+	city: 'Greifswald'
+};
+
 /** Required for patient to reach /patient/match */
 export const MATCH_REQUIRED_PATIENT = [
 	'language',

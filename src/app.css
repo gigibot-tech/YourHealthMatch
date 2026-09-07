@@ -122,13 +122,13 @@ a.btn {
 	font-weight: 600;
 }
 
-.role-picker {
-	min-height: 100vh;
-	display: flex;
-	align-items: center;
+.role-choice {
+	cursor: default;
+}
+
+.role-choice .actions {
+	margin-top: 1rem;
 	justify-content: center;
-	background: linear-gradient(160deg, var(--color-cobalt) 0%, #0f2a7a 100%);
-	padding: 1.5rem;
 }
 
 .next-patient .btn-ghost {

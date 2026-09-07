@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appointmentService, practiceService } from '$lib/application/services';
+	import { appointmentService, practiceService, factsService } from '$lib/application/services';
 	import { appointments, role } from '$lib/stores/app';
 	import { goto } from '$app/navigation';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
@@ -11,6 +11,7 @@
 		greeting
 	} from '$lib/ui/clinicFormat';
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
+	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
 
 	$effect(() => {
 		if ($role !== 'doctor') role.set('doctor');
@@ -57,6 +58,13 @@
 		}
 		return map;
 	});
+	let factCards = $derived.by(() => {
+		void $appointments;
+		return factsService.forDoctor(practiceId);
+	});
+	let factHeading = $derived(
+		todays.length || pending.length ? 'Clinic facts' : 'Before the first booking'
+	);
 
 	async function act(id: string, action: Extract<ActionId, 'confirm' | 'reject' | 'cancel' | 'join_video'>) {
 		try {
@@ -109,6 +117,8 @@
 		</div>
 	</div>
 </div>
+
+<FactsCarousel cards={factCards} heading={factHeading} />
 
 {#if pending.length}
 	<div class="pending-strip">
