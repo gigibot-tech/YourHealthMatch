@@ -7,15 +7,17 @@
 		factsService,
 		practiceService
 	} from '$lib/application/services';
-	import { appointments, availability, role } from '$lib/stores/app';
+	import { appointments, availability, preferences, role } from '$lib/stores/app';
+	import { greetingKey, t, uiLanguage } from '$lib/i18n';
 	import { goto } from '$app/navigation';
-	import { dateStrip, toISODate } from '$lib/domain/scheduling/slotCalendar';
+	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import {
 		badgeClass,
 		cancelPolicyHint,
 		firstName,
+		formatApptDate,
 		formatTime,
-		greeting
+		visitRemoval
 	} from '$lib/ui/clinicFormat';
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
 	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
@@ -24,11 +26,10 @@
 		if ($role !== 'doctor') role.set('doctor');
 	});
 
+	let lang = $derived(uiLanguage($preferences.language));
 	const practiceId = DEMO_PRACTICE_ID;
 	const doctorId = DEMO_DOCTOR_ID;
 	const today = toISODate(new Date());
-	const strip = dateStrip(7);
-	let selectedDate = $state(today);
 
 	let doctorName = $derived(
 		practiceService.get(practiceId)?.doctors.find((d) => d.id === doctorId)?.name ||
@@ -38,19 +39,20 @@
 		firstName(doctorName.replace(', M.D.', '').replace(/^Dr\.?\s+/i, ''))
 	);
 
-	let todays = $derived(
+	let upcoming = $derived(
 		$appointments
 			.filter(
 				(a) =>
 					a.practiceId === practiceId &&
 					a.doctorId === doctorId &&
-					a.date === selectedDate &&
+					a.date >= today &&
 					a.status !== 'cancelled' &&
 					a.status !== 'rejected'
 			)
 			.map((a) => appointmentService.view(a, 'doctor'))
-			.sort((a, b) => a.time.localeCompare(b.time))
+			.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
 	);
+	let todays = $derived(upcoming.filter((a) => a.date === today));
 	let pending = $derived(
 		$appointments
 			.filter(
@@ -66,16 +68,7 @@
 	let timeline = $derived.by(() => {
 		void $availability;
 		void $appointments;
-		return availabilityService.dayTimeline({ practiceId, doctorId, date: selectedDate });
-	});
-	let selectedLabel = $derived(strip.find((d) => d.iso === selectedDate)?.label || selectedDate);
-	let clinicLine = $derived.by(() => {
-		const visitBit = todays.length === 1 ? '1 visit' : `${todays.length} visits`;
-		const waitBit = pending.length
-			? ` · ${pending.length} waiting to confirm`
-			: '';
-		const nextBit = next ? ` · next at ${formatTime(next.time)}` : '';
-		return `${visitBit}${waitBit}${nextBit}`;
+		return availabilityService.dayTimeline({ practiceId, doctorId, date: today });
 	});
 	let factCards = $derived.by(() => {
 		void $appointments;
@@ -85,14 +78,28 @@
 		todays.length || pending.length ? 'Clinic facts' : 'Before the first booking'
 	);
 
+	function removalLabel(visit: { loggedExternally?: boolean; practiceId: string }) {
+		return visitRemoval({
+			loggedExternally: visit.loggedExternally,
+			bookingChannel: practiceService.get(visit.practiceId)?.bookingChannel
+		}).label;
+	}
+
 	async function act(id: string, action: Extract<ActionId, 'confirm' | 'reject' | 'cancel' | 'join_video'>) {
 		try {
 			if (action === 'join_video') {
 				goto(`/video?id=${id}&role=doctor`);
 				return;
 			}
-			if (action === 'cancel' && !confirm('Cancel this appointment? The time slot will open again.')) {
-				return;
+			if (action === 'cancel') {
+				const visit = $appointments.find((a) => a.id === id);
+				const removal = visitRemoval({
+					loggedExternally: visit?.loggedExternally,
+					bookingChannel: visit
+						? practiceService.get(visit.practiceId)?.bookingChannel
+						: undefined
+				});
+				if (!confirm(removal.confirm)) return;
 			}
 			await appointmentService.applyAction(id, action, 'doctor');
 		} catch (e) {
@@ -109,9 +116,8 @@
 
 <div class="page-header">
 	<div>
-		<h1>{greeting()}, {helloName}</h1>
-		<p class="sub">{selectedLabel} · {selectedDate === today ? "Today’s clinic" : 'Clinic day'}</p>
-		<p class="policy-hint">{clinicLine}</p>
+		<h1>{t(lang, greetingKey())}, {helloName}</h1>
+		<p class="sub">Today’s clinic and every visit still ahead.</p>
 		<p class="policy-hint">{cancelPolicyHint()}</p>
 	</div>
 </div>
@@ -129,7 +135,7 @@
 					>
 					{#if a.allowedActions.includes('cancel')}
 						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'cancel')}
-							>Cancel</button
+							>{removalLabel(a)}</button
 						>
 					{/if}
 				</div>
@@ -153,12 +159,12 @@
 					>
 				{:else if n.allowedActions.includes('join_video')}
 					<button class="btn btn-primary" type="button" onclick={() => act(n.id, 'join_video')}
-						>Join Video Call</button
+						>{n.callStartedAt ? 'Rejoin visit' : 'Start visit'}</button
 					>
 				{/if}
 				{#if n.allowedActions.includes('cancel')}
 					<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(n.id, 'cancel')}
-						>Cancel</button
+						>{removalLabel(n)}</button
 					>
 				{/if}
 			</div>
@@ -167,32 +173,16 @@
 {:else}
 	<div class="next-patient empty">
 		<div class="eyebrow">Next patient</div>
-		<h2>No visits scheduled {selectedDate === today ? 'today' : 'this day'}</h2>
+		<h2>No visits scheduled today</h2>
 	</div>
 {/if}
 
-<div class="date-strip">
-	{#each strip as d}
-		<button
-			type="button"
-			class="date-chip"
-			class:active={d.iso === selectedDate}
-			onclick={() => (selectedDate = d.iso)}
-		>
-			<div class="day">{d.day}</div>
-			<div class="num">{d.dateNum}</div>
-		</button>
-	{/each}
-</div>
-
 <div class="doctor-layout">
 	<div class="timeline">
-		<h2 class="section-title">
-			{selectedDate === today ? "Today’s timeline" : `${selectedLabel}`}
-		</h2>
+		<h2 class="section-title">Today’s timeline</h2>
 		{#if timeline.slots.length === 0}
 			<p class="policy-hint">
-				No times opened {selectedDate === today ? 'today' : 'this day'} — open hours on
+				No times opened today — open hours on
 				<a href="/doctor/schedule">Schedule</a>.
 			</p>
 		{:else}
@@ -221,14 +211,14 @@
 	</div>
 
 	<aside class="queue-panel">
-		<h3>Queue</h3>
-		{#if todays.length === 0}
-			<p style="color:var(--color-text-muted);font-size:0.875rem">No patients in queue.</p>
+		<h3>{t(lang, 'dash.upcoming')}</h3>
+		{#if upcoming.length === 0}
+			<p style="color:var(--color-text-muted);font-size:0.875rem">No visits ahead.</p>
 		{:else}
-			{#each todays as a}
+			{#each upcoming as a}
 				<div class="queue-item">
 					<div class="name">{a.patientName} <span class={badgeClass(a.badge)}>{a.label}</span></div>
-					<div class="info">{formatTime(a.time)} · {a.reason}</div>
+					<div class="info">{formatApptDate(a.date)} · {formatTime(a.time)} · {a.reason}</div>
 					<div class="appt-actions">
 						{#if a.status === 'requested'}
 							<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'confirm')}
@@ -236,12 +226,12 @@
 							>
 						{:else if a.allowedActions.includes('join_video')}
 							<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'join_video')}
-								>Join</button
+								>{a.callStartedAt ? 'Rejoin' : 'Start visit'}</button
 							>
 						{/if}
 						{#if a.allowedActions.includes('cancel')}
 							<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'cancel')}
-								>Cancel</button
+								>{removalLabel(a)}</button
 							>
 						{/if}
 						<a class="btn btn-ghost btn-sm" href={`/doctor/appointment/${a.id}`}>Details</a>
