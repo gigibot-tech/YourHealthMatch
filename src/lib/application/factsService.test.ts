@@ -71,6 +71,7 @@ describe('factsService', () => {
 		appointmentRepo.replaceAll([]);
 		const ids = factsService.forPatient('pat_demo').map((c) => c.id);
 		expect(ids).toContain('patient-waitlist');
+		expect(ids[0]).toBe('patient-regeluntersuchungen');
 		expect(ids).not.toContain('patient-de-specialist-wait');
 		expect(ids).not.toContain('patient-external-linked');
 	});

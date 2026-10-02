@@ -36,6 +36,8 @@ export type FactCard = {
 	region?: FactRegion;
 	/** Default `has_appointment` — primary carousel is appointment-present. */
 	when?: FactWhen;
+	/** Rank first when the patient has nothing booked. */
+	leadWhenEmpty?: boolean;
 	/** Only when a local visit is at a practice with an external booking channel. */
 	externalLinked?: boolean;
 };
@@ -126,6 +128,7 @@ function scoreCard(card: FactCard, input: FactSelectInput, tags: FactRegion[]): 
 	else if (card.region === 'MV' && tags.includes('MV')) score += 5;
 	else if (card.region === 'Germany') score += 1;
 	if (card.externalLinked && input.hasExternalLinkedAppointment) score += 20;
+	if (card.leadWhenEmpty && !input.hasAppointment) score += 40;
 	if ((card.when ?? 'has_appointment') === 'has_appointment' && input.hasAppointment) score += 2;
 	return score;
 }
@@ -178,7 +181,7 @@ export const FACT_CARDS: FactCard[] = [
 		href: 'https://www.116117.de',
 		hrefLabel: 'Open 116117.de',
 		region: 'Germany',
-		when: 'always'
+		when: 'no_appointment'
 	},
 	{
 		id: 'patient-tss-gp-wait',
@@ -241,7 +244,24 @@ export const FACT_CARDS: FactCard[] = [
 		href: 'https://www.kvmv.de/patienten/patienteninformationen/tss/',
 		hrefLabel: 'KVMV appointment desk',
 		region: 'MV',
-		when: 'always'
+		when: 'no_appointment'
+	},
+	{
+		id: 'patient-regeluntersuchungen',
+		audience: 'patient',
+		title: 'Nothing booked? Start with a Regeluntersuchung',
+		body: 'A routine statutory check is a useful first visit: Check-up 35 (from age 35, then every three years), skin-cancer screening from 35 every two years, and regular dental check-ups. If you are not sure which you are due for, match a GP and ask there.',
+		source: {
+			label: 'gesund.bund.de — Vorsorge und Früherkennung',
+			url: 'https://gesund.bund.de',
+			year: 2024,
+			note: 'Age and interval depend on the programme and your insurance. Not a personal reminder.'
+		},
+		href: '/patient/requirements',
+		hrefLabel: 'Set a checkup',
+		region: 'Germany',
+		when: 'no_appointment',
+		leadWhenEmpty: true
 	},
 	{
 		id: 'patient-greifswald-sample',
@@ -311,7 +331,7 @@ export const FACT_CARDS: FactCard[] = [
 		id: 'patient-waitlist',
 		audience: 'patient',
 		title: 'No visit yet? Join the waitlist',
-		body: 'If matching finds no practice, you can leave an email on the waitlist. That is local interest data (and optional notify-when-a-slot-opens) — not a 116117 booking.',
+		body: 'If matching finds no practice, you can leave an email on the waitlist. That stays on this device — it is not a 116117 booking.',
 		href: '/patient/match',
 		hrefLabel: 'Match or waitlist',
 		when: 'no_appointment'

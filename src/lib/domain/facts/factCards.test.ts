@@ -70,7 +70,8 @@ describe('selectFacts', () => {
 		}).map((c) => c.id);
 		expect(ids).toContain('patient-ophtho-116117');
 		expect(ids).toContain('patient-greifswald-sample');
-		expect(ids).toContain('patient-mv-tss');
+		expect(ids).not.toContain('patient-mv-tss');
+		expect(ids).not.toContain('patient-regeluntersuchungen');
 		expect(ids).toContain('patient-de-specialist-wait');
 		expect(ids).not.toContain('patient-derm-wait');
 		expect(ids).not.toContain('patient-waitlist');
@@ -86,7 +87,10 @@ describe('selectFacts', () => {
 			...greifswald
 		}).map((c) => c.id);
 		expect(ids).toContain('patient-waitlist');
+		expect(ids).toContain('patient-regeluntersuchungen');
+		expect(ids[0]).toBe('patient-regeluntersuchungen');
 		expect(ids).toContain('patient-tss-116117');
+		expect(ids).toContain('patient-mv-tss');
 		expect(ids).toContain('patient-external-gap');
 		expect(ids).not.toContain('patient-de-specialist-wait');
 		expect(ids).not.toContain('patient-ophtho-116117');

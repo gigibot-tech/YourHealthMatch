@@ -73,7 +73,7 @@
 		/>
 		<span>
 			<strong>Other — suggest a system</strong>
-			<span class="detail"> · notifies us + opens email to contact@yourhealthmatch.com</span>
+			<span class="detail"> · opens email to contact@yourhealthmatch.com</span>
 		</span>
 	</label>
 
