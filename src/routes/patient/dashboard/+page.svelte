@@ -1,10 +1,16 @@
 <script lang="ts">
-	import { appointmentService, practiceService, factsService } from '$lib/application/services';
+	import {
+		appointmentService,
+		DEMO_PATIENT_ID,
+		factsService,
+		practiceService
+	} from '$lib/application/services';
 	import { appointments, requirements } from '$lib/stores/app';
 	import { dateStrip, toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import { goto } from '$app/navigation';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
 	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
+	import ContactPracticeForm from '$lib/components/patient/ContactPracticeForm.svelte';
 	import {
 		badgeClass,
 		cancelPolicyHint,
@@ -15,7 +21,7 @@
 	} from '$lib/ui/clinicFormat';
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
 
-	const PATIENT_ID = 'pat_demo';
+	const PATIENT_ID = DEMO_PATIENT_ID;
 	const strip = dateStrip(7);
 	let selectedDate = $state(toISODate(new Date()));
 
@@ -29,7 +35,6 @@
 	);
 	let dayAppts = $derived(upcoming.filter((a) => a.date === selectedDate));
 	let videoReady = $derived(upcoming.filter((a) => a.status === 'confirmed').length);
-	let pastVisits = $derived(mine.filter((a) => a.status === 'completed').length);
 	let selectedLabel = $derived(strip.find((d) => d.iso === selectedDate)?.label || selectedDate);
 	let helloName = $derived(firstName(mine[0]?.patientName || 'John'));
 	let factCards = $derived.by(() => {
@@ -70,29 +75,14 @@
 	<div>
 		<h1 style="font-size:1.35rem;font-weight:700">{greeting()}, {helloName}</h1>
 		<p class="sub">Here's your health overview.</p>
+		<p class="policy-hint">
+			{#if upcoming.length === 0}
+				No visits booked yet.
+			{:else}
+				{upcoming.length} upcoming{videoReady ? ` · ${videoReady} ready for video` : ''}
+			{/if}
+		</p>
 		<p class="policy-hint">{cancelPolicyHint()}</p>
-	</div>
-</div>
-
-<div class="kpi-row">
-	<div class="kpi-card">
-		<div class="kpi-icon blue">📅</div>
-		<div><div class="label">Upcoming</div><div class="value">{upcoming.length}</div></div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon green">📹</div>
-		<div><div class="label">Video ready</div><div class="value">{videoReady}</div></div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon purple">🔎</div>
-		<div>
-			<div class="label">Find care</div>
-			<div class="value" style="font-size:1.1rem"><a href="/patient/match">Match</a></div>
-		</div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon orange">🏥</div>
-		<div><div class="label">Past visits</div><div class="value">{pastVisits}</div></div>
 	</div>
 </div>
 
@@ -141,6 +131,7 @@
 					>
 				{/if}
 			</div>
+			<ContactPracticeForm compact practiceId={v.practiceId} doctorId={v.doctorId} />
 		</div>
 	{/each}
 {/if}
@@ -163,6 +154,7 @@
 			<div class="appt-actions">
 				<a class="btn btn-ghost btn-sm" href="/patient/dashboard">View</a>
 			</div>
+			<ContactPracticeForm compact practiceId={v.practiceId} doctorId={v.doctorId} />
 		</div>
 	{/each}
 {/if}

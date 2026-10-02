@@ -284,7 +284,7 @@ export const FACT_CARDS: FactCard[] = [
 			url: 'https://bitkom-research.de/news/die-haelfte-der-deutschen-vereinbart-arzttermine-online',
 			year: 2024
 		},
-		href: '/patient/systems',
+		href: '/patient/requirements#systems',
 		hrefLabel: 'Your booking apps',
 		region: 'Germany',
 		when: 'always'
@@ -294,7 +294,7 @@ export const FACT_CARDS: FactCard[] = [
 		audience: 'patient',
 		title: 'Doctolib & other apps are not synced',
 		body: 'YourHealthMatch keeps local and demo appointments only. Visits that exist solely on Doctolib, Doctena, arzt-direkt or CGM/Clickdoc do not appear here. If a practice you booked here also lists one of those channels, we can still open that app — we still do not read its calendar.',
-		href: '/patient/systems',
+		href: '/patient/requirements#systems',
 		hrefLabel: 'Open saved systems',
 		when: 'always'
 	},
@@ -303,7 +303,7 @@ export const FACT_CARDS: FactCard[] = [
 		audience: 'patient',
 		title: 'This visit is linked to an external booker',
 		body: 'At least one of your upcoming visits is at a practice that also uses Doctolib, Doctena, arzt-direkt or CGM. Treat that channel as a shortcut, not a second source of truth — we have not imported any extra appointments from it.',
-		href: '/patient/systems',
+		href: '/patient/requirements#systems',
 		hrefLabel: 'Open booking apps',
 		externalLinked: true
 	},

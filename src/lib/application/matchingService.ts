@@ -35,23 +35,24 @@ export function createMatchingService(deps: Partial<MatchingServiceDeps> = {}) {
 				);
 
 			const today = toISODate(new Date());
-			const availabilityByPractice: Record<string, boolean> = {};
-			for (const p of practices) {
-				const offers = availabilityService.listBookable({
-					practiceId: p.id,
-					fromDate: today,
-					days: 7
-				});
-				availabilityByPractice[p.id] = Boolean(
-					nextAvailableWithinDays(
+			const nextSlotByDoctor: Record<string, { date: string; time: string } | null> = {};
+			for (const practice of practices) {
+				for (const doctor of practice.doctors) {
+					const offers = availabilityService.listBookable({
+						practiceId: practice.id,
+						doctorId: doctor.id,
+						fromDate: today,
+						days: 28
+					});
+					nextSlotByDoctor[doctor.id] = nextAvailableWithinDays(
 						offers.map((o) => ({ date: o.date, time: o.time })),
-						7,
+						28,
 						today
-					)
-				);
+					);
+				}
 			}
 
-			return engine.findMatches({ requirements: reqs, practices, availabilityByPractice });
+			return engine.findMatches({ requirements: reqs, practices, nextSlotByDoctor });
 		},
 
 		isPatientReady(reqs?: PatientRequirements) {

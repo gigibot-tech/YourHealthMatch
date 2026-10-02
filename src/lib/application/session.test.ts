@@ -12,6 +12,9 @@ import {
 	startSession
 } from './session';
 import { preferences, role } from '$lib/stores/app';
+import { toISODate } from '$lib/domain/scheduling/slotCalendar';
+import { practiceProfileDefaults } from '$lib/domain/practice/practiceProfileDefaults';
+import { safeMerge } from '$lib/safeMerge';
 
 describe('session start', () => {
 	beforeEach(() => {
@@ -61,16 +64,54 @@ describe('canSkipOnboarding', () => {
 	it('allows skip independently: doctor hours can exist when the demo patient cannot match', () => {
 		const turner = practiceRepo.get(DEMO_PRACTICE_ID);
 		if (!turner) throw new Error('expected seeded Turner practice');
-		practiceRepo.save({ ...turner, specialties: ['Dentistry'] });
+		practiceRepo.save({
+			...turner,
+			specialties: ['Dentistry'],
+			doctors: turner.doctors.map((d) => ({ ...d, specialty: 'Dentistry' }))
+		});
 		expect(canSkipOnboarding('patient')).toBe(false);
 		expect(canSkipOnboarding('doctor')).toBe(true);
 	});
 
-	it('allows skip independently: demo patient can match when the doctor has no published hours', () => {
+	it('allows skip independently: demo patient can match when the demo doctor has no published hours', () => {
 		availabilityStore.replaceAll(
 			availabilityStore.list().filter((o) => o.doctorId !== 'doc_turner')
 		);
+		const soon = new Date();
+		soon.setDate(soon.getDate() + 3);
+		const soonIso = toISODate(soon);
+		const alt = safeMerge(practiceProfileDefaults, {
+			id: 'prac_alt',
+			name: 'Alt Augen',
+			languages: ['EN'],
+			specialties: ['Ophthalmology'],
+			insuranceAccepted: ['GKV'],
+			kvApproved: true,
+			location: 'Greifswald',
+			postcode: '17489',
+			acceptingNewPatients: true,
+			onboardingStatus: 'available_for_matching' as const,
+			modalities: ['video'],
+			doctors: [
+				{
+					id: 'doc_alt',
+					practiceId: 'prac_alt',
+					name: 'Dr. Alt',
+					specialty: 'Ophthalmology'
+				}
+			]
+		});
+		practiceRepo.replaceAll([...practiceRepo.getAll().filter((p) => p.id !== 'prac_alt'), alt]);
+		availabilityStore.save({
+			id: 'offer_alt',
+			practiceId: 'prac_alt',
+			doctorId: 'doc_alt',
+			date: soonIso,
+			time: '09:00',
+			durationMin: 30
+		});
 		expect(canSkipOnboarding('doctor')).toBe(false);
+		expect(matchingService.findMatches(demoPatientRequirements).length).toBeGreaterThan(0);
 		expect(canSkipOnboarding('patient')).toBe(true);
 	});
 

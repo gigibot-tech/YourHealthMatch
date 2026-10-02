@@ -3,6 +3,7 @@
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
 	import { practices } from '$lib/stores/app';
 	import type { Practice } from '$lib/domain/practice/practiceProfileDefaults';
+	import { normalizeLanguageList } from '$lib/domain/languages';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
 
 	const practiceId = 'prac_turner';
@@ -12,6 +13,7 @@
 		languages: '',
 		specialties: '',
 		insuranceAccepted: '',
+		kvApproved: false,
 		location: '',
 		postcode: '',
 		acceptingNewPatients: true,
@@ -26,6 +28,7 @@
 			languages: practice.languages.join(', '),
 			specialties: practice.specialties.join(', '),
 			insuranceAccepted: practice.insuranceAccepted.join(', '),
+			kvApproved: practice.kvApproved === true,
 			location: practice.location,
 			postcode: practice.postcode,
 			acceptingNewPatients: practice.acceptingNewPatients === true,
@@ -41,9 +44,10 @@
 		e.preventDefault();
 		practiceService.saveProfile(practiceId, {
 			name: form.name,
-			languages: form.languages.split(',').map((s) => s.trim()).filter(Boolean),
+			languages: normalizeLanguageList(form.languages),
 			specialties: form.specialties.split(',').map((s) => s.trim()).filter(Boolean),
 			insuranceAccepted: form.insuranceAccepted.split(',').map((s) => s.trim()).filter(Boolean),
+			kvApproved: form.kvApproved,
 			location: form.location,
 			postcode: form.postcode,
 			acceptingNewPatients: form.acceptingNewPatients,
@@ -77,8 +81,8 @@
 		<input id="name" bind:value={form.name} />
 	</div>
 	<div class="field">
-		<label for="languages">Languages (comma-separated)</label>
-		<input id="languages" bind:value={form.languages} />
+		<label for="languages">Languages (codes: EN, DE, AR, TR, RU, UK — or English, Deutsch, …)</label>
+		<input id="languages" bind:value={form.languages} placeholder="EN, DE, AR" />
 	</div>
 	<div class="field">
 		<label for="specialties">Specialties</label>
@@ -86,7 +90,12 @@
 	</div>
 	<div class="field">
 		<label for="ins">Insurance accepted</label>
-		<input id="ins" bind:value={form.insuranceAccepted} placeholder="GKV, PKV" />
+		<input id="ins" bind:value={form.insuranceAccepted} placeholder="GKV, PKV, self_pay" />
+	</div>
+	<div class="field">
+		<label>
+			<input type="checkbox" bind:checked={form.kvApproved} /> KV-Zulassung (required for GKV matching)
+		</label>
 	</div>
 	<div class="field-row">
 		<div class="field">

@@ -122,6 +122,19 @@ a.btn {
 	font-weight: 600;
 }
 
+.match-criteria {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.match-criteria a.btn {
+	text-decoration: none;
+}
+
 .role-choice {
 	cursor: default;
 }

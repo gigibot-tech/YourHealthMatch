@@ -107,9 +107,10 @@ function seedPractices(): Practice[] {
 		safeMerge(practiceProfileDefaults, {
 			id: 'prac_turner',
 			name: 'Augenpraxis Turner',
-			languages: ['English', 'German', 'Arabic'],
+			languages: ['EN', 'DE', 'AR'],
 			specialties: ['Ophthalmology', 'General Practitioner', 'Dermatology'],
 			insuranceAccepted: ['GKV', 'PKV'],
+			kvApproved: true,
 			location: 'Greifswald',
 			postcode: '17489',
 			acceptingNewPatients: true,
@@ -134,9 +135,10 @@ function seedPractices(): Practice[] {
 		safeMerge(practiceProfileDefaults, {
 			id: 'prac_davis',
 			name: 'Hausarztpraxis Davis',
-			languages: ['German', 'English'],
+			languages: ['DE', 'EN'],
 			specialties: ['General Practitioner', 'Dentist'],
 			insuranceAccepted: ['GKV'],
+			kvApproved: true,
 			location: 'Greifswald',
 			postcode: '17489',
 			acceptingNewPatients: true,

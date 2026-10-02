@@ -6,10 +6,12 @@ import {
 export { practiceProfileDefaults };
 export type { Practice };
 
-export type InsuranceType = 'GKV' | 'PKV' | 'private' | '';
+/** GKV / PKV / Selbstzahler. Legacy `private` still accepted when reading stored data. */
+export type InsuranceType = 'GKV' | 'PKV' | 'self_pay' | 'private' | '';
 
 /** Patient demand fields — same SSOT as matching inputs (survey parity). */
 export type PatientRequirements = {
+	/** Prefer Phase-1 codes: UK, AR, TR, RU, EN, DE (labels still normalize). */
 	language: string;
 	specialty: string;
 	insurance: InsuranceType;
@@ -37,7 +39,7 @@ export const patientRequirementsDefaults: PatientRequirements = {
 
 /** Local demo patient — complete enough to match seeded Greifswald practices. */
 export const demoPatientRequirements: PatientRequirements = {
-	language: 'English',
+	language: 'EN',
 	specialty: 'Ophthalmology',
 	insurance: 'GKV',
 	location: 'Greifswald',
@@ -67,11 +69,5 @@ export const MATCH_REQUIRED_PRACTICE = [
 	'acceptingNewPatients'
 ] as const;
 
-export const MATCH_WEIGHTS = {
-	language: 25,
-	specialty: 25,
-	insurance: 20,
-	location: 15,
-	newPatient: 10,
-	availability: 5
-} as const;
+/** Deliberate result-set limit (ohne Overchoice): show at most this many doctors. */
+export const MATCH_RESULT_MAX = 5;

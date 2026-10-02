@@ -1,120 +1,137 @@
+/**
+ * Deterministic Phase-1 matching: five hard rules, then cap at MATCH_RESULT_MAX doctors.
+ * No learned weights — application supplies practices and per-doctor next slots.
+ */
+import { missingRequired } from '$lib/safeMerge';
+import type { Doctor, Practice } from '../practice/practiceProfileDefaults';
 import {
 	MATCH_REQUIRED_PRACTICE,
-	MATCH_WEIGHTS,
+	MATCH_RESULT_MAX,
 	type PatientRequirements
 } from './matchDefaults';
-import type { Practice } from '../practice/practiceProfileDefaults';
-import { missingRequired } from '$lib/safeMerge';
+import { practiceSpeaksLanguage } from './matchLanguages';
+import {
+	acceptsNewPatientsWhenRequired,
+	availabilityReason,
+	compareNextSlot,
+	compareProximity,
+	doctorHasNextSlot,
+	insuranceAcceptedByPractice,
+	insuranceReason,
+	languageReason,
+	passesProximityRule,
+	proximityReason,
+	proximityTier,
+	specialtyMatchesDoctor,
+	specialtyReason,
+	type NextSlot,
+	type ProximityTier
+} from './matchRules';
 
 export type MatchResult = {
 	practiceId: string;
-	doctorId?: string;
+	doctorId: string;
+	/** Kept for booking draft; ranking uses next slot + proximity, not percent fit. */
 	score: number;
 	reasons: string[];
+	nextSlot?: NextSlot;
+	proximityTier?: ProximityTier;
 };
 
 export type MatchInput = {
 	requirements: PatientRequirements;
 	practices: Practice[];
-	/** practiceId → has same-week availability */
-	availabilityByPractice?: Record<string, boolean>;
+	/** doctorId → earliest published bookable slot (calendar / availability store). */
+	nextSlotByDoctor?: Record<string, NextSlot | null>;
 };
 
-function includesCI(list: string[], value: string): boolean {
-	const v = value.trim().toLowerCase();
-	if (!v) return false;
-	return list.some((x) => x.toLowerCase() === v || x.toLowerCase().includes(v));
+function practiceReady(practice: Practice): boolean {
+	return (
+		practice.onboardingStatus === 'available_for_matching' &&
+		missingRequired(practice, MATCH_REQUIRED_PRACTICE).length === 0
+	);
 }
 
-function locationMatch(req: PatientRequirements, practice: Practice): boolean {
-	const loc = (req.location || req.city || '').trim().toLowerCase();
-	if (!loc) return false;
-	const pLoc = practice.location.toLowerCase();
-	const pPlz = practice.postcode.toLowerCase();
-	const reqPlz = (req.postcode || '').trim().toLowerCase();
-	if (reqPlz && pPlz && reqPlz === pPlz) return true;
-	return pLoc.includes(loc) || loc.includes(pLoc);
-}
-
-export function scorePractice(
+function evaluateDoctor(
 	requirements: PatientRequirements,
 	practice: Practice,
-	hasAvailability: boolean
+	doctor: Doctor,
+	nextSlot: NextSlot | null | undefined
 ): MatchResult | null {
-	if (practice.onboardingStatus !== 'available_for_matching') return null;
-	if (missingRequired(practice, MATCH_REQUIRED_PRACTICE).length > 0) return null;
+	if (!practiceReady(practice)) return null;
+	if (!acceptsNewPatientsWhenRequired(requirements, practice)) return null;
 
-	let score = 0;
-	const reasons: string[] = [];
+	// (1) Patient language
+	if (!practiceSpeaksLanguage(practice.languages, requirements.language)) return null;
 
-	if (includesCI(practice.languages, requirements.language)) {
-		score += MATCH_WEIGHTS.language;
-		reasons.push(`Speaks ${requirements.language}`);
-	} else {
-		return null; // hard filter: language
-	}
+	// (2) Specialty on this doctor
+	if (!specialtyMatchesDoctor(doctor, requirements.specialty)) return null;
 
-	if (includesCI(practice.specialties, requirements.specialty)) {
-		score += MATCH_WEIGHTS.specialty;
-		reasons.push(`${requirements.specialty} offered`);
-	} else {
-		return null; // hard filter: specialty
-	}
+	// (3) Insurance (GKV → KV approval)
+	if (!insuranceAcceptedByPractice(practice, requirements.insurance)) return null;
 
-	if (
-		requirements.insurance &&
-		includesCI(practice.insuranceAccepted, requirements.insurance)
-	) {
-		score += MATCH_WEIGHTS.insurance;
-		reasons.push(`Accepts ${requirements.insurance}`);
-	} else if (requirements.insurance) {
-		return null; // hard filter: insurance type
-	}
+	// (4) Availability (published calendar slot for this doctor)
+	if (!doctorHasNextSlot(nextSlot)) return null;
 
-	if (locationMatch(requirements, practice)) {
-		score += MATCH_WEIGHTS.location;
-		reasons.push(`Near ${requirements.location || requirements.city}`);
-	}
+	// (5) Geographic proximity for offline mediation
+	if (!passesProximityRule(requirements, practice)) return null;
 
-	if (requirements.newPatient === true) {
-		if (practice.acceptingNewPatients === true) {
-			score += MATCH_WEIGHTS.newPatient;
-			reasons.push('Accepting new patients');
-		} else {
-			return null;
-		}
-	} else if (requirements.newPatient === false) {
-		score += MATCH_WEIGHTS.newPatient;
-	}
-
-	if (hasAvailability) {
-		score += MATCH_WEIGHTS.availability;
-		reasons.push('Same-week availability');
-	}
-
-	const doctor =
-		practice.doctors.find((d) =>
-			includesCI([d.specialty], requirements.specialty)
-		) ?? practice.doctors[0];
+	const tier = proximityTier(requirements, practice);
+	const reasons = [
+		languageReason(requirements.language),
+		specialtyReason(requirements.specialty),
+		insuranceReason(requirements.insurance),
+		availabilityReason(nextSlot)
+	];
+	if (requirements.newPatient === true) reasons.push('Accepting new patients');
+	const near = proximityReason(requirements, tier);
+	if (near) reasons.push(near);
 
 	return {
 		practiceId: practice.id,
-		doctorId: doctor?.id,
-		score,
-		reasons
+		doctorId: doctor.id,
+		score: reasons.length,
+		reasons,
+		nextSlot,
+		proximityTier: tier
 	};
 }
 
-export function findMatches(input: MatchInput): MatchResult[] {
-	const { requirements, practices, availabilityByPractice = {} } = input;
-	const results: MatchResult[] = [];
-	for (const practice of practices) {
-		const scored = scorePractice(
-			requirements,
-			practice,
-			Boolean(availabilityByPractice[practice.id])
-		);
-		if (scored) results.push(scored);
+function sortMatches(a: MatchResult, b: MatchResult): number {
+	if (a.nextSlot && b.nextSlot) {
+		const bySlot = compareNextSlot(a.nextSlot, b.nextSlot);
+		if (bySlot !== 0) return bySlot;
 	}
-	return results.sort((a, b) => b.score - a.score);
+	const byProx = compareProximity(a.proximityTier ?? 'none', b.proximityTier ?? 'none');
+	if (byProx !== 0) return byProx;
+	return a.doctorId.localeCompare(b.doctorId);
+}
+
+/** Evaluate one doctor against the five rules (plus new-patient when required). */
+export function scoreDoctor(
+	requirements: PatientRequirements,
+	practice: Practice,
+	doctor: Doctor,
+	nextSlot: NextSlot | null | undefined
+): MatchResult | null {
+	return evaluateDoctor(requirements, practice, doctor, nextSlot);
+}
+
+export function findMatches(input: MatchInput): MatchResult[] {
+	const { requirements, practices, nextSlotByDoctor = {} } = input;
+	const results: MatchResult[] = [];
+
+	for (const practice of practices) {
+		for (const doctor of practice.doctors) {
+			const scored = evaluateDoctor(
+				requirements,
+				practice,
+				doctor,
+				nextSlotByDoctor[doctor.id] ?? null
+			);
+			if (scored) results.push(scored);
+		}
+	}
+
+	return results.sort(sortMatches).slice(0, MATCH_RESULT_MAX);
 }

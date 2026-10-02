@@ -4,16 +4,16 @@
 	import { goto } from '$app/navigation';
 	import { preferences, role } from '$lib/stores/app';
 	import NavIcon from '$lib/components/shell/NavIcon.svelte';
+	import { registrationLanguageOptions, normalizeLanguageCode } from '$lib/domain/languages';
 
 	let { children } = $props();
 	let menuOpen = $state(false);
+	const languageOptions = registrationLanguageOptions();
 
 	const patientLinks = [
 		{ href: '/patient/dashboard', label: 'Dashboard', icon: 'dashboard' as const },
 		{ href: '/patient/match', label: 'Match', icon: 'search' as const },
-		{ href: '/patient/requirements', label: 'Requirements', icon: 'file' as const },
-		{ href: '/patient/systems', label: 'Systems', icon: 'grid' as const },
-		{ href: '/patient/language', label: 'Language', icon: 'user' as const },
+		{ href: '/patient/requirements', label: 'Profile', icon: 'user' as const },
 		{ href: '/video', label: 'Video Call', icon: 'video' as const }
 	];
 	const doctorLinks = [
@@ -68,13 +68,13 @@
 			<select
 				class="lang-select"
 				aria-label="Language"
-				value={$preferences.language || 'English'}
+				value={normalizeLanguageCode($preferences.language) || 'EN'}
 				onchange={(e) =>
 					preferences.set({ language: (e.currentTarget as HTMLSelectElement).value })}
 			>
-				<option>English</option>
-				<option>Deutsch</option>
-				<option>Arabic</option>
+				{#each languageOptions as opt}
+					<option value={opt.code}>{opt.label}</option>
+				{/each}
 			</select>
 			<nav class="nav">
 				{#each links as link}

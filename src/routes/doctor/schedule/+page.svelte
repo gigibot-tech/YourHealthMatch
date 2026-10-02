@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { appointmentService, availabilityService, practiceService } from '$lib/application/services';
 	import { appointments, availability } from '$lib/stores/app';
-	import { dateStrip } from '$lib/domain/scheduling/slotCalendar';
+	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import { goto } from '$app/navigation';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
+	import MonthCalendar from '$lib/components/scheduling/MonthCalendar.svelte';
 	import { formatTime } from '$lib/ui/clinicFormat';
 
 	const practiceId = 'prac_turner';
 	const practice = $derived(practiceService.get(practiceId));
-	const strip = dateStrip(7);
-	let selectedDate = $state(strip[0]?.iso ?? '');
+	let selectedDate = $state(toISODate(new Date()));
 	let doctorId = $state('doc_turner');
 	let newTime = $state('10:00');
 	let notice = $state('');
@@ -111,19 +111,7 @@
 	</div>
 </div>
 
-<div class="date-strip">
-	{#each strip as d}
-		<button
-			type="button"
-			class="date-chip"
-			class:active={d.iso === selectedDate}
-			onclick={() => (selectedDate = d.iso)}
-		>
-			<div class="day">{d.day}</div>
-			<div class="num">{d.dateNum}</div>
-		</button>
-	{/each}
-</div>
+<MonthCalendar bind:value={selectedDate} />
 
 <div class="card">
 	<h3>Open times</h3>

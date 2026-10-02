@@ -62,6 +62,82 @@ export function dateStrip(days = 7, clock: Clock = { now: () => new Date() }): D
 	return out;
 }
 
+/** Monday-first week headers, Skyscanner-style month grids. */
+export const MONTH_WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+export type MonthCell = {
+	iso: string;
+	dateNum: number;
+	inMonth: boolean;
+	/** Before today (local calendar), not selectable for booking/publishing. */
+	past: boolean;
+};
+
+export type MonthGrid = {
+	year: number;
+	month: number; // 1–12
+	title: string;
+	cells: MonthCell[];
+};
+
+function parseISODate(iso: string): Date {
+	const [y, m, d] = iso.split('-').map(Number);
+	return new Date(y, m - 1, d);
+}
+
+/** Shift a YYYY-MM by delta months; returns `{ year, month }` with month 1–12. */
+export function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
+	const d = new Date(year, month - 1 + delta, 1);
+	return { year: d.getFullYear(), month: d.getMonth() + 1 };
+}
+
+/**
+ * Flat 6×7 Monday-first grid for one calendar month (Skyscanner-like picker).
+ * Leading/trailing cells belong to adjacent months (`inMonth: false`).
+ */
+export function monthGrid(
+	year: number,
+	month: number,
+	clock: Clock = { now: () => new Date() }
+): MonthGrid {
+	const todayIso = toISODate(clock.now());
+	const first = new Date(year, month - 1, 1);
+	// Monday = 0 … Sunday = 6
+	const mondayOffset = (first.getDay() + 6) % 7;
+	const start = new Date(year, month - 1, 1 - mondayOffset);
+	const cells: MonthCell[] = [];
+	for (let i = 0; i < 42; i++) {
+		const d = new Date(start);
+		d.setDate(start.getDate() + i);
+		const iso = toISODate(d);
+		cells.push({
+			iso,
+			dateNum: d.getDate(),
+			inMonth: d.getMonth() === month - 1,
+			past: iso < todayIso
+		});
+	}
+	return {
+		year,
+		month,
+		title: first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+		cells
+	};
+}
+
+export function monthFromISO(iso: string): { year: number; month: number } {
+	const d = parseISODate(iso);
+	return { year: d.getFullYear(), month: d.getMonth() + 1 };
+}
+
+export function formatDayLabel(iso: string): string {
+	return parseISODate(iso).toLocaleDateString('en-US', {
+		weekday: 'long',
+		month: 'short',
+		day: 'numeric'
+	});
+}
+
 export function isSlotAvailable(slot: Slot, booked: Slot[]): boolean {
 	return !booked.some((b) => b.date === slot.date && b.time === slot.time);
 }

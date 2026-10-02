@@ -1,4 +1,10 @@
-import { bookableOffers, offerId, type AvailabilityOffer } from '$lib/domain/scheduling/availability';
+import {
+	bookableOffers,
+	buildDayTimeline,
+	offerId,
+	type AvailabilityOffer,
+	type DayTimeline
+} from '$lib/domain/scheduling/availability';
 import { openSlots, SLOT_STEP_MINUTES, toISODate, type Slot } from '$lib/domain/scheduling/slotCalendar';
 import type { Practice } from '$lib/domain/practice/practiceProfileDefaults';
 import type { AvailabilityQuery, AvailabilityStorePort } from '$lib/ports/AvailabilityStorePort';
@@ -103,6 +109,27 @@ export function createAvailabilityService(store: AvailabilityStorePort = availab
 				throw new Error('That time already has a booking. Cancel the visit first.');
 			}
 			store.remove(id);
+		},
+
+		dayTimeline(input: { practiceId: string; doctorId?: string; date: string }): DayTimeline {
+			const offers = store.list({
+				practiceId: input.practiceId,
+				doctorId: input.doctorId,
+				fromDate: input.date,
+				toDate: input.date
+			});
+			const occupied = appointmentRepo
+				.getAll()
+				.filter(
+					(a) =>
+						a.practiceId === input.practiceId &&
+						(!input.doctorId || a.doctorId === input.doctorId) &&
+						a.date === input.date &&
+						a.status !== 'cancelled' &&
+						a.status !== 'rejected'
+				)
+				.map((a) => ({ date: a.date, time: a.time, appointmentId: a.id }));
+			return buildDayTimeline(offers, occupied, input.date);
 		}
 	};
 }

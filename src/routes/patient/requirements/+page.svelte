@@ -4,20 +4,15 @@
 	import { preferences, requirements, patchRequirements } from '$lib/stores/app';
 	import { matchingService } from '$lib/application/services';
 	import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
+	import { normalizeLanguageCode } from '$lib/domain/languages';
+	import LanguageSelect from '$lib/components/i18n/LanguageSelect.svelte';
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
 	import SystemsPrefs from '$lib/components/patient/SystemsPrefs.svelte';
 
-	const LANGUAGES = [
-		'English',
-		'Deutsch',
-		'Arabic',
-		'German',
-		'Turkish',
-		'Ukrainian',
-		'Russian'
-	];
-
-	let form = $state({ ...$requirements });
+	let form = $state({
+		...$requirements,
+		language: normalizeLanguageCode($requirements.language) || $requirements.language
+	});
 
 	onMount(() => {
 		const id = window.location.hash.replace('#', '');
@@ -26,8 +21,9 @@
 
 	function save(e: Event) {
 		e.preventDefault();
-		if (form.language) preferences.set({ language: form.language });
-		const saved = patchRequirements(form as Partial<PatientRequirements>);
+		const language = normalizeLanguageCode(form.language) || form.language;
+		if (language) preferences.set({ language });
+		const saved = patchRequirements({ ...form, language } as Partial<PatientRequirements>);
 		const missing = matchingService.isPatientReady(saved);
 		if (missing.length) {
 			alert(`Still needed: ${missing.join(', ')}`);
@@ -39,21 +35,17 @@
 
 <div class="page-header">
 	<h1>Profile</h1>
-	<p class="sub">Language, match requirements, and the booking apps you already use.</p>
+	<p class="sub">
+		Multilingual registration (UK / AR / TR / RU / EN / DE), match requirements, and booking apps.
+	</p>
 </div>
 
 <form class="card" id="requirements" onsubmit={save}>
 	<h2 class="section-title" style="margin-top:0">Match requirements</h2>
 	<p class="sub">Matching will not run until these are filled.</p>
 	<div class="field-row">
-		<div class="field" id="language">
-			<label for="lang">Preferred language</label>
-			<select id="lang" bind:value={form.language} required>
-				<option value="">Select…</option>
-				{#each LANGUAGES as lang}
-					<option>{lang}</option>
-				{/each}
-			</select>
+		<div id="language">
+			<LanguageSelect id="lang" bind:value={form.language} required label="Preferred language" />
 		</div>
 		<div class="field">
 			<label for="specialty">Specialty</label>
@@ -74,7 +66,7 @@
 				<option value="">Select…</option>
 				<option value="GKV">GKV</option>
 				<option value="PKV">PKV</option>
-				<option value="private">Private</option>
+				<option value="self_pay">Selbstzahler</option>
 			</select>
 		</div>
 		<div class="field">

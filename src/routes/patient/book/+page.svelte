@@ -2,10 +2,10 @@
 	import { goto } from '$app/navigation';
 	import { availabilityService, practiceService } from '$lib/application/services';
 	import { availability, bookingDraft } from '$lib/stores/app';
-	import { dateStrip } from '$lib/domain/scheduling/slotCalendar';
+	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
+	import MonthCalendar from '$lib/components/scheduling/MonthCalendar.svelte';
 
-	const strip = dateStrip(7);
-	let selectedDate = $state(strip[0]?.iso ?? '');
+	let selectedDate = $state(toISODate(new Date()));
 	let selectedTime = $state<string | null>(null);
 
 	let practice = $derived(
@@ -45,22 +45,12 @@
 	<p class="sub">Only times {doctorName} has opened. The practice controls the calendar.</p>
 </div>
 
-<div class="date-strip">
-	{#each strip as d}
-		<button
-			type="button"
-			class="date-chip"
-			class:active={d.iso === selectedDate}
-			onclick={() => {
-				selectedDate = d.iso;
-				selectedTime = null;
-			}}
-		>
-			<div class="day">{d.day}</div>
-			<div class="num">{d.dateNum}</div>
-		</button>
-	{/each}
-</div>
+<MonthCalendar
+	bind:value={selectedDate}
+	onSelect={() => {
+		selectedTime = null;
+	}}
+/>
 
 <div class="card">
 	{#if slots.length === 0}

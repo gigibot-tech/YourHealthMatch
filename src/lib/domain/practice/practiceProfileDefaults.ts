@@ -31,6 +31,8 @@ export type Practice = {
 	languages: string[];
 	specialties: string[];
 	insuranceAccepted: string[];
+	/** GKV matching requires KV-Zulassung on the practice. */
+	kvApproved: boolean;
 	location: string;
 	postcode: string;
 	acceptingNewPatients: boolean | null;
@@ -49,6 +51,7 @@ export const practiceProfileDefaults: Practice = {
 	languages: [],
 	specialties: [],
 	insuranceAccepted: [],
+	kvApproved: false,
 	location: '',
 	postcode: '',
 	acceptingNewPatients: null,

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	EXTERNAL_SYSTEMS,
 	mailtoSuggestOther,
+	mailtoContactPractice,
 	resolveLaunches,
 	systemsForContext,
 	CONTACT_EMAIL
@@ -29,6 +30,22 @@ describe('externalSystems', () => {
 
 	it('mailto targets contact@yourhealthmatch.com', () => {
 		expect(mailtoSuggestOther('Medgate', 'note')).toContain(CONTACT_EMAIL);
+	});
+
+	it('mailto for contacting a practice includes the practice and reply-to', () => {
+		const href = mailtoContactPractice({
+			practiceName: 'Augenpraxis Turner',
+			doctorName: 'Dr. Olivia Turner, M.D.',
+			location: 'Greifswald',
+			specialty: 'Ophthalmology',
+			language: 'English',
+			patientEmail: 'pat@example.com',
+			note: 'Need a video slot'
+		});
+		expect(href).toContain(CONTACT_EMAIL);
+		expect(href).toContain(encodeURIComponent('Please contact: Augenpraxis Turner'));
+		expect(decodeURIComponent(href)).toContain('pat@example.com');
+		expect(decodeURIComponent(href)).toContain('Need a video slot');
 	});
 
 	it('saves prefs and opens via service', () => {

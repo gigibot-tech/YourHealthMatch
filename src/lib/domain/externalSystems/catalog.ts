@@ -147,6 +147,38 @@ export function mailtoSuggestOther(name: string, note: string): string {
 	return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
 }
 
+/** Patient asks the team to reach a matched practice on their behalf. */
+export function mailtoContactPractice(input: {
+	practiceName: string;
+	doctorName?: string;
+	location?: string;
+	specialty?: string;
+	language?: string;
+	patientEmail: string;
+	note?: string;
+}): string {
+	const practice = input.practiceName.trim() || 'Unknown practice';
+	const subject = encodeURIComponent(`Please contact: ${practice}`);
+	const body = encodeURIComponent(
+		[
+			'Hi YourHealthMatch team,',
+			'',
+			'Please contact this practice for me.',
+			'',
+			`Practice: ${practice}`,
+			`Doctor: ${input.doctorName?.trim() || '—'}`,
+			`Location: ${input.location?.trim() || '—'}`,
+			`Specialty: ${input.specialty?.trim() || '—'}`,
+			`Language: ${input.language?.trim() || '—'}`,
+			`Reply to: ${input.patientEmail.trim()}`,
+			`Note: ${input.note?.trim() || '—'}`,
+			'',
+			'Thanks'
+		].join('\n')
+	);
+	return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+}
+
 /** Practice bookingChannel → catalog id (skip direct/phone). */
 export const CHANNEL_TO_SYSTEM: Record<string, string> = {
 	doctolib: 'doctolib',

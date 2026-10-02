@@ -8,7 +8,7 @@ import type { MatchingEnginePort } from '$lib/ports/MatchingEnginePort';
 import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 
 const completeReqs = safeMerge(patientRequirementsDefaults, {
-	language: 'Arabic',
+	language: 'AR',
 	specialty: 'Dermatology',
 	insurance: 'GKV' as const,
 	location: 'Greifswald',
@@ -27,16 +27,24 @@ describe('services integration', () => {
 	it('matches complete patient against seeded practices', () => {
 		const results = matchingService.findMatches(completeReqs);
 		expect(results.length).toBeGreaterThan(0);
-		expect(results[0].score).toBeGreaterThan(0);
+		expect(results[0].reasons.length).toBeGreaterThan(0);
+		expect(results[0].doctorId).toBeTruthy();
 	});
 
 	it('ranks through MatchingEnginePort instead of importing the engine', () => {
 		const engine: MatchingEnginePort = {
-			findMatches: vi.fn(() => [{ practiceId: 'prac_stub', score: 42, reasons: ['port'] }])
+			findMatches: vi.fn(() => [
+				{
+					practiceId: 'prac_stub',
+					doctorId: 'doc_stub',
+					score: 4,
+					reasons: ['port']
+				}
+			])
 		};
 		const results = createMatchingService({ engine }).findMatches(completeReqs);
 		expect(engine.findMatches).toHaveBeenCalledOnce();
-		expect(results[0]).toEqual({ practiceId: 'prac_stub', score: 42, reasons: ['port'] });
+		expect(results[0]).toMatchObject({ practiceId: 'prac_stub', doctorId: 'doc_stub' });
 	});
 
 	it('books then doctor confirms via lifecycle', async () => {
@@ -107,8 +115,56 @@ describe('services integration', () => {
 		expect(interestService.aggregateDemand()[0].count).toBe(1);
 	});
 
+	it('requestContact saves interest and returns a team mailto', async () => {
+		const { interest, mailto } = await interestService.requestContact({
+			email: 'pat@example.com',
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			note: 'Arabic-speaking, GKV',
+			requirements: completeReqs
+		});
+		expect(interest.intent).toBe('contact_practice');
+		expect(interest.note).toBe('Arabic-speaking, GKV');
+		expect(mailto).toContain('contact@yourhealthmatch.com');
+		expect(interestService.forPractice('prac_turner').some((i) => i.id === interest.id)).toBe(
+			true
+		);
+	});
+
+	it('requestContact rejects a missing practice', async () => {
+		await expect(
+			interestService.requestContact({
+				email: 'pat@example.com',
+				practiceId: 'prac_missing'
+			})
+		).rejects.toThrow(/Practice not found/);
+	});
+
 	it('practice saveProfile marks available when ready', () => {
 		const list = practiceService.list();
 		expect(practiceService.isReady(list[0])).toBe(true);
+	});
+
+	it('builds a doctor day timeline from published offers', () => {
+		const date = '2030-06-10';
+		availabilityService.publish({
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			date,
+			time: '11:00'
+		});
+		availabilityService.publish({
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			date,
+			time: '14:00'
+		});
+		const timeline = availabilityService.dayTimeline({
+			practiceId: 'prac_turner',
+			doctorId: 'doc_turner',
+			date
+		});
+		expect(timeline.slots.map((s) => s.time)).toEqual(['11:00', '14:00']);
+		expect(timeline.slots.every((s) => s.appointmentId === null)).toBe(true);
 	});
 });

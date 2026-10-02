@@ -25,6 +25,18 @@ describe('interest', () => {
 		expect(i.id).toMatch(/^int_/);
 	});
 
+	it('stores a contact-practice request note', () => {
+		const i = buildInterest({
+			email: 'pat@example.com',
+			intent: 'contact_practice',
+			practiceId: 'prac_turner',
+			note: 'Please call in English'
+		});
+		expect(i.intent).toBe('contact_practice');
+		expect(i.note).toBe('Please call in English');
+		expect(i.practiceId).toBe('prac_turner');
+	});
+
 	it('aggregates demand for doctor dashboard', () => {
 		const a = buildInterest({
 			email: 'a@b.com',

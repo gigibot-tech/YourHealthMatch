@@ -8,7 +8,7 @@ import {
 	type PatientRequirements
 } from '../matching/matchDefaults';
 
-export type InterestIntent = 'waitlist' | 'beta' | 'notify_match';
+export type InterestIntent = 'waitlist' | 'beta' | 'notify_match' | 'contact_practice';
 export type BetaInterest = 'yes' | 'maybe' | 'no' | null;
 
 export type Interest = {
@@ -18,6 +18,7 @@ export type Interest = {
 	practiceId: string | null;
 	intent: InterestIntent;
 	betaInterest: BetaInterest;
+	note: string;
 	createdAt: string;
 	notifiedAt: string | null;
 };
@@ -29,6 +30,7 @@ export const interestDefaults: Interest = {
 	practiceId: null,
 	intent: 'waitlist',
 	betaInterest: null,
+	note: '',
 	createdAt: '',
 	notifiedAt: null
 };

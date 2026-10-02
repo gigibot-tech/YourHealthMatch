@@ -1,8 +1,15 @@
 <script lang="ts">
-	import { appointmentService, practiceService, factsService } from '$lib/application/services';
-	import { appointments, role } from '$lib/stores/app';
+	import {
+		appointmentService,
+		availabilityService,
+		DEMO_DOCTOR_ID,
+		DEMO_PRACTICE_ID,
+		factsService,
+		practiceService
+	} from '$lib/application/services';
+	import { appointments, availability, role } from '$lib/stores/app';
 	import { goto } from '$app/navigation';
-	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
+	import { dateStrip, toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import {
 		badgeClass,
 		cancelPolicyHint,
@@ -17,18 +24,18 @@
 		if ($role !== 'doctor') role.set('doctor');
 	});
 
-	const practiceId = 'prac_turner';
-	const HOURS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+	const practiceId = DEMO_PRACTICE_ID;
+	const doctorId = DEMO_DOCTOR_ID;
 	const today = toISODate(new Date());
-	const todayLabel = new Date().toLocaleDateString('en-US', {
-		weekday: 'long',
-		month: 'long',
-		day: 'numeric'
-	});
+	const strip = dateStrip(7);
+	let selectedDate = $state(today);
 
 	let doctorName = $derived(
-		practiceService.get(practiceId)?.doctors.find((d) => d.id === 'doc_turner')?.name ||
+		practiceService.get(practiceId)?.doctors.find((d) => d.id === doctorId)?.name ||
 			'Dr. Olivia Turner'
+	);
+	let helloName = $derived(
+		firstName(doctorName.replace(', M.D.', '').replace(/^Dr\.?\s+/i, ''))
 	);
 
 	let todays = $derived(
@@ -36,7 +43,8 @@
 			.filter(
 				(a) =>
 					a.practiceId === practiceId &&
-					a.date === today &&
+					a.doctorId === doctorId &&
+					a.date === selectedDate &&
 					a.status !== 'cancelled' &&
 					a.status !== 'rejected'
 			)
@@ -45,18 +53,29 @@
 	);
 	let pending = $derived(
 		$appointments
-			.filter((a) => a.practiceId === practiceId && a.status === 'requested')
+			.filter(
+				(a) =>
+					a.practiceId === practiceId &&
+					a.doctorId === doctorId &&
+					a.status === 'requested'
+			)
 			.map((a) => appointmentService.view(a, 'doctor'))
 	);
-	let completedToday = $derived(todays.filter((a) => a.status === 'completed'));
 	let next = $derived(todays.find((a) => a.status === 'confirmed') || todays[0] || null);
-	let byHour = $derived.by(() => {
-		const map: Record<string, typeof todays> = {};
-		for (const a of todays) {
-			const h = `${a.time.slice(0, 2)}:00`;
-			(map[h] ??= []).push(a);
-		}
-		return map;
+	let byId = $derived(Object.fromEntries(todays.map((a) => [a.id, a])));
+	let timeline = $derived.by(() => {
+		void $availability;
+		void $appointments;
+		return availabilityService.dayTimeline({ practiceId, doctorId, date: selectedDate });
+	});
+	let selectedLabel = $derived(strip.find((d) => d.iso === selectedDate)?.label || selectedDate);
+	let clinicLine = $derived.by(() => {
+		const visitBit = todays.length === 1 ? '1 visit' : `${todays.length} visits`;
+		const waitBit = pending.length
+			? ` · ${pending.length} waiting to confirm`
+			: '';
+		const nextBit = next ? ` · next at ${formatTime(next.time)}` : '';
+		return `${visitBit}${waitBit}${nextBit}`;
 	});
 	let factCards = $derived.by(() => {
 		void $appointments;
@@ -90,31 +109,10 @@
 
 <div class="page-header">
 	<div>
-		<h1>{greeting()}, {firstName(doctorName.replace(', M.D.', ''))}</h1>
-		<p class="sub">{todayLabel} · Today’s clinic</p>
+		<h1>{greeting()}, {helloName}</h1>
+		<p class="sub">{selectedLabel} · {selectedDate === today ? "Today’s clinic" : 'Clinic day'}</p>
+		<p class="policy-hint">{clinicLine}</p>
 		<p class="policy-hint">{cancelPolicyHint()}</p>
-	</div>
-</div>
-
-<div class="kpi-row">
-	<div class="kpi-card">
-		<div class="kpi-icon blue">🗓️</div>
-		<div><div class="label">Today’s visits</div><div class="value">{todays.length}</div></div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon orange">⏳</div>
-		<div><div class="label">Pending</div><div class="value">{pending.length}</div></div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon green">✅</div>
-		<div><div class="label">Completed</div><div class="value">{completedToday.length}</div></div>
-	</div>
-	<div class="kpi-card">
-		<div class="kpi-icon purple">⏰</div>
-		<div>
-			<div class="label">Next start</div>
-			<div class="value" style="font-size:1.1rem">{next ? formatTime(next.time) : '—'}</div>
-		</div>
 	</div>
 </div>
 
@@ -169,31 +167,57 @@
 {:else}
 	<div class="next-patient empty">
 		<div class="eyebrow">Next patient</div>
-		<h2>No visits scheduled today</h2>
+		<h2>No visits scheduled {selectedDate === today ? 'today' : 'this day'}</h2>
 	</div>
 {/if}
 
+<div class="date-strip">
+	{#each strip as d}
+		<button
+			type="button"
+			class="date-chip"
+			class:active={d.iso === selectedDate}
+			onclick={() => (selectedDate = d.iso)}
+		>
+			<div class="day">{d.day}</div>
+			<div class="num">{d.dateNum}</div>
+		</button>
+	{/each}
+</div>
+
 <div class="doctor-layout">
 	<div class="timeline">
-		<h2 class="section-title">Today’s timeline</h2>
-		{#each HOURS as h}
-			<div class="timeline-row">
-				<div class="timeline-hour">{formatTime(h)}</div>
-				<div class="timeline-slot">
-					{#each byHour[h] || [] as a}
-						<button
-							type="button"
-							class="timeline-chip"
-							class:pending={a.status === 'requested'}
-							onclick={() => timelineClick(a.id, a.status)}
-						>
-							<strong>{a.patientName}</strong>
-							{a.reason} · {formatTime(a.time)}
-						</button>
-					{/each}
+		<h2 class="section-title">
+			{selectedDate === today ? "Today’s timeline" : `${selectedLabel}`}
+		</h2>
+		{#if timeline.slots.length === 0}
+			<p class="policy-hint">
+				No times opened {selectedDate === today ? 'today' : 'this day'} — open hours on
+				<a href="/doctor/schedule">Schedule</a>.
+			</p>
+		{:else}
+			{#each timeline.slots as slot}
+				{@const visit = slot.appointmentId ? byId[slot.appointmentId] : null}
+				<div class="timeline-row">
+					<div class="timeline-hour">{formatTime(slot.time)}</div>
+					<div class="timeline-slot">
+						{#if visit}
+							<button
+								type="button"
+								class="timeline-chip"
+								class:pending={visit.status === 'requested'}
+								onclick={() => timelineClick(visit.id, visit.status)}
+							>
+								<strong>{visit.patientName}</strong>
+								{visit.reason} · {formatTime(visit.time)}
+							</button>
+						{:else}
+							<span class="timeline-open">Open</span>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		{/if}
 	</div>
 
 	<aside class="queue-panel">
