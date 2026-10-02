@@ -6,7 +6,18 @@
 		practiceService
 	} from '$lib/application/services';
 	import { appointments, requirements, preferences } from '$lib/stores/app';
-	import { greetingKey, t, uiLanguage } from '$lib/i18n';
+	import {
+		fill,
+		greetingKey,
+		reasonText,
+		specialtyText,
+		statusText,
+		t,
+		uiLanguage,
+		uiLocale
+	} from '$lib/i18n';
+	import { CANCEL_MIN_NOTICE_HOURS } from '$lib/config/clinicPolicy';
+	import { CHANNEL_TO_SYSTEM, getSystemById } from '$lib/domain/externalSystems/catalog';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import { goto } from '$app/navigation';
 	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
@@ -14,11 +25,9 @@
 	import ContactPracticeForm from '$lib/components/patient/ContactPracticeForm.svelte';
 	import {
 		badgeClass,
-		cancelPolicyHint,
 		firstName,
 		formatApptDate,
-		formatTime,
-		visitRemoval
+		formatTime
 	} from '$lib/ui/clinicFormat';
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
 
@@ -83,7 +92,7 @@
 	<div>
 		<h1 style="font-size:1.35rem;font-weight:700">{t(lang, greetingKey())}, {helloName}</h1>
 		<p class="sub">{t(lang, 'dash.sub')}</p>
-		<p class="policy-hint">{cancelPolicyHint()}</p>
+		<p class="policy-hint">{fill(lang, 'policy.cancel', { hours: String(CANCEL_MIN_NOTICE_HOURS) })}</p>
 	</div>
 </div>
 
@@ -99,27 +108,26 @@
 		<ul class="visit-list">
 			{#each upcoming as v (v.id)}
 				{@const doc = doctorLine(v.practiceId, v.doctorId)}
-				{@const removal = visitRemoval({
-					loggedExternally: v.loggedExternally,
-					bookingChannel: practiceService.get(v.practiceId)?.bookingChannel
-				})}
+				{@const bookerId = CHANNEL_TO_SYSTEM[practiceService.get(v.practiceId)?.bookingChannel || '']}
+				{@const booker = bookerId ? getSystemById(bookerId)?.name : undefined}
+				{@const external = Boolean(v.loggedExternally || booker)}
 				{@const canJoin = v.allowedActions.includes('join_video') && Boolean(v.callStartedAt)}
 				<li class="card visit-card">
 					<div class="visit-card__when">
-						<strong>{formatApptDate(v.date)}</strong>
-						<span>{formatTime(v.time)}</span>
+						<strong>{formatApptDate(v.date, uiLocale(lang))}</strong>
+						<span>{formatTime(v.time, uiLocale(lang))}</span>
 					</div>
 					<div class="visit-card__body">
 						<div class="visit-card__who">
 							<h3>{doc.name}</h3>
-							<span class={badgeClass(v.badge)}>{v.label}</span>
+							<span class={badgeClass(v.badge)}>{statusText(lang, v.status)}</span>
 						</div>
 						<p class="detail">
-							{doc.specialty} · {doc.practiceName}{doc.location ? ` · ${doc.location}` : ''}
+							{specialtyText(lang, doc.specialty)} · {doc.practiceName}{doc.location ? ` · ${doc.location}` : ''}
 						</p>
-						<p class="detail">{v.reason}</p>
+						<p class="detail">{reasonText(lang, v.reason)}</p>
 						{#if v.status === 'requested'}
-							<p class="detail">Waiting for the practice to confirm.</p>
+							<p class="detail">{t(lang, 'visit.waiting')}</p>
 						{:else if v.modality !== 'in_person' && !v.callStartedAt}
 							<p class="detail">{t(lang, 'dash.doctorStarts')}</p>
 						{/if}
@@ -142,7 +150,14 @@
 								<button
 									class="btn btn-ghost btn-sm"
 									type="button"
-									onclick={() => act(v.id, 'cancel', removal.confirm)}>{removal.label}</button
+									onclick={() =>
+										act(
+											v.id,
+											'cancel',
+											external
+												? fill(lang, 'visit.deleteConfirm', { system: booker || '' })
+												: t(lang, 'visit.cancelConfirm')
+										)}>{external ? t(lang, 'visit.delete') : t(lang, 'visit.cancel')}</button
 								>
 							{/if}
 							<ContactPracticeForm compact practiceId={v.practiceId} doctorId={v.doctorId} />

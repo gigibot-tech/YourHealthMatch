@@ -8,16 +8,16 @@
 		practiceService
 	} from '$lib/application/services';
 	import { appointments, availability, preferences, role } from '$lib/stores/app';
-	import { greetingKey, t, uiLanguage } from '$lib/i18n';
+	import { fill, greetingKey, t, uiLanguage } from '$lib/i18n';
+	import { CANCEL_MIN_NOTICE_HOURS } from '$lib/config/clinicPolicy';
+	import { CHANNEL_TO_SYSTEM, getSystemById } from '$lib/domain/externalSystems/catalog';
 	import { goto } from '$app/navigation';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import {
 		badgeClass,
-		cancelPolicyHint,
 		firstName,
 		formatApptDate,
-		formatTime,
-		visitRemoval
+		formatTime
 	} from '$lib/ui/clinicFormat';
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
 	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
@@ -78,11 +78,15 @@
 		todays.length || pending.length ? 'Clinic facts' : 'Before the first booking'
 	);
 
+	function bookerName(practiceId: string) {
+		const id = CHANNEL_TO_SYSTEM[practiceService.get(practiceId)?.bookingChannel || ''];
+		return id ? getSystemById(id)?.name : undefined;
+	}
+
 	function removalLabel(visit: { loggedExternally?: boolean; practiceId: string }) {
-		return visitRemoval({
-			loggedExternally: visit.loggedExternally,
-			bookingChannel: practiceService.get(visit.practiceId)?.bookingChannel
-		}).label;
+		return visit.loggedExternally || bookerName(visit.practiceId)
+			? t(lang, 'visit.delete')
+			: t(lang, 'visit.cancel');
 	}
 
 	async function act(id: string, action: Extract<ActionId, 'confirm' | 'reject' | 'cancel' | 'join_video'>) {
@@ -93,13 +97,12 @@
 			}
 			if (action === 'cancel') {
 				const visit = $appointments.find((a) => a.id === id);
-				const removal = visitRemoval({
-					loggedExternally: visit?.loggedExternally,
-					bookingChannel: visit
-						? practiceService.get(visit.practiceId)?.bookingChannel
-						: undefined
-				});
-				if (!confirm(removal.confirm)) return;
+				const booker = visit ? bookerName(visit.practiceId) : undefined;
+				const external = Boolean(visit?.loggedExternally || booker);
+				const message = external
+					? fill(lang, 'visit.deleteConfirm', { system: booker || '' })
+					: t(lang, 'visit.cancelConfirm');
+				if (!confirm(message)) return;
 			}
 			await appointmentService.applyAction(id, action, 'doctor');
 		} catch (e) {
@@ -118,7 +121,7 @@
 	<div>
 		<h1>{t(lang, greetingKey())}, {helloName}</h1>
 		<p class="sub">Today’s clinic and every visit still ahead.</p>
-		<p class="policy-hint">{cancelPolicyHint()}</p>
+		<p class="policy-hint">{fill(lang, 'policy.cancel', { hours: String(CANCEL_MIN_NOTICE_HOURS) })}</p>
 	</div>
 </div>
 

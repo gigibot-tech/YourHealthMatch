@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { interestService } from '$lib/application/services';
-	import { requirements } from '$lib/stores/app';
+	import { preferences, requirements } from '$lib/stores/app';
+	import { fill, t, uiLanguage } from '$lib/i18n';
 
 	let {
 		practiceId,
@@ -12,6 +13,7 @@
 		compact?: boolean;
 	} = $props();
 
+	let lang = $derived(uiLanguage($preferences.language));
 	let email = $state('');
 	let note = $state('');
 	let notice = $state('');
@@ -30,7 +32,7 @@
 				requirements: $requirements
 			});
 			window.location.href = mailto;
-			notice = `Opening email to ${interestService.contactEmail}…`;
+			notice = fill(lang, 'visit.opening', { email: interestService.contactEmail });
 			note = '';
 		} catch (err) {
 			notice = err instanceof Error ? err.message : 'Could not send the request';
@@ -41,11 +43,11 @@
 </script>
 
 <details class="contact-practice" class:compact>
-	<summary class="btn btn-ghost" class:btn-sm={compact}>I want you to contact them</summary>
+	<summary class="btn btn-ghost" class:btn-sm={compact}>{t(lang, 'visit.contact')}</summary>
 	<form class="contact-form" onsubmit={send}>
-		<p class="detail">We’ll email {interestService.contactEmail}. Your address is the reply-to.</p>
+		<p class="detail">{fill(lang, 'visit.contactHint', { email: interestService.contactEmail })}</p>
 		<div class="field">
-			<label for={`contact-email-${practiceId}`}>Your email</label>
+			<label for={`contact-email-${practiceId}`}>{t(lang, 'visit.email')}</label>
 			<input
 				id={`contact-email-${practiceId}`}
 				type="email"
@@ -55,7 +57,7 @@
 			/>
 		</div>
 		<div class="field">
-			<label for={`contact-note-${practiceId}`}>Note (optional)</label>
+			<label for={`contact-note-${practiceId}`}>{t(lang, 'visit.note')}</label>
 			<textarea
 				id={`contact-note-${practiceId}`}
 				rows="2"
@@ -65,7 +67,7 @@
 		</div>
 		<div class="actions">
 			<button class="btn btn-primary" class:btn-sm={compact} type="submit" disabled={sending}
-				>Send email</button
+				>{t(lang, 'visit.send')}</button
 			>
 		</div>
 		{#if notice}<p class="detail">{notice}</p>{/if}

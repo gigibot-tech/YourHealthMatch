@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { externalSystemService } from '$lib/application/externalSystemService';
 	import type { AppLaunch } from '$lib/domain/externalSystems/catalog';
+	import { preferences } from '$lib/stores/app';
+	import { fill, uiLanguage } from '$lib/i18n';
 
 	let {
 		practiceId = '',
@@ -51,6 +53,15 @@
 			.filter((l) => !practiceOnly || l.reason === 'practice_channel');
 	});
 
+	let lang = $derived(uiLanguage($preferences.language));
+
+	function labelFor(l: AppLaunch) {
+		if (l.reason === 'practice_channel' && doctorName) {
+			return fill(lang, 'launch.openDoctor', { doctor: doctorName, system: l.name });
+		}
+		return fill(lang, 'launch.open', { system: l.name });
+	}
+
 	function open(l: AppLaunch) {
 		externalSystemService.launch(l.href);
 	}
@@ -68,7 +79,7 @@
 					onclick={() => open(l)}
 					title="{l.name} ({l.reason})"
 				>
-					{l.label}
+					{labelFor(l)}
 				</button>
 			{/each}
 		</div>
@@ -88,7 +99,7 @@
 						onclick={() => open(l)}
 						title="{l.name} · {l.reason}"
 					>
-						{l.label}
+						{labelFor(l)}
 					</button>
 				{/each}
 			</div>

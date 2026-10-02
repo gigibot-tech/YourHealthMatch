@@ -16,15 +16,16 @@ export function greeting(now = new Date()): string {
 	return 'Good evening';
 }
 
-export function formatTime(time: string): string {
+export function formatTime(time: string, locale = 'en-US'): string {
 	const [h, m] = time.split(':').map(Number);
-	const ampm = h >= 12 ? 'PM' : 'AM';
-	const hr = h % 12 || 12;
-	return `${hr}:${String(m).padStart(2, '0')} ${ampm}`;
+	return new Date(2000, 0, 1, h, m).toLocaleTimeString(locale, {
+		hour: 'numeric',
+		minute: '2-digit'
+	});
 }
 
-export function formatApptDate(iso: string): string {
-	return new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', {
+export function formatApptDate(iso: string, locale = 'en-US'): string {
+	return new Date(`${iso}T12:00:00`).toLocaleDateString(locale, {
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric'
