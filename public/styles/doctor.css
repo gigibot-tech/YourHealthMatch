@@ -180,3 +180,201 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Doctor schedule — contained workspace that stacks on tablet/phone */
+
+.schedule-page {
+  width: 100%;
+  max-width: 56rem;
+}
+
+.schedule-header {
+  align-items: flex-end;
+}
+
+.schedule-doctor {
+  margin-bottom: 0;
+  width: min(100%, 16rem);
+}
+
+.schedule-workspace {
+  display: grid;
+  grid-template-columns: 17.5rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.schedule-cal .month-cal {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.schedule-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.schedule-open {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.schedule-open__head h2 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.schedule-open__head .detail {
+  margin-top: 0.15rem;
+}
+
+.schedule-open__hint {
+  margin: 0;
+}
+
+.schedule-muted {
+  margin: 0;
+  padding: 0.65rem 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.card.schedule-muted {
+  padding: 0.9rem 1.1rem;
+}
+
+.schedule-notice {
+  color: var(--color-cobalt);
+  font-weight: 600;
+}
+
+.schedule-open .slot-grid {
+  margin: 0;
+}
+
+.schedule-publish {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.schedule-publish__time {
+  margin: 0;
+}
+
+.schedule-publish__time input {
+  min-width: 7.5rem;
+}
+
+.schedule-bookings .section-title {
+  margin-bottom: 0.75rem;
+}
+
+.schedule-booking-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.schedule-booking-list .card {
+  margin-top: 0;
+}
+
+.schedule-booking {
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr) auto;
+  gap: 0.55rem 0.75rem;
+  align-items: center;
+}
+
+.schedule-booking__time {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-indigo);
+}
+
+.schedule-booking__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.schedule-booking__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.schedule-booking__who strong {
+  font-size: 0.95rem;
+}
+
+.schedule-booking .appt-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .schedule-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-cal .month-cal {
+    max-width: none;
+  }
+
+  .schedule-header {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-doctor {
+    width: 100%;
+  }
+
+  .schedule-cal .month-cal {
+    max-width: none;
+  }
+
+  .schedule-publish {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-publish__time input,
+  .schedule-publish .btn {
+    width: 100%;
+  }
+
+  .schedule-booking {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .schedule-booking .appt-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .schedule-booking .appt-actions .btn {
+    flex: 1;
+  }
+}
