@@ -2,12 +2,15 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { preferences, requirements, patchRequirements } from '$lib/stores/app';
+	import { t, uiLanguage } from '$lib/i18n';
 	import { matchingService } from '$lib/application/services';
 	import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 	import { normalizeLanguageCode } from '$lib/domain/languages';
 	import LanguageSelect from '$lib/components/i18n/LanguageSelect.svelte';
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
 	import SystemsPrefs from '$lib/components/patient/SystemsPrefs.svelte';
+
+	let lang = $derived(uiLanguage($preferences.language));
 
 	let form = $state({
 		...$requirements,
@@ -34,30 +37,14 @@
 </script>
 
 <div class="page-header">
-	<h1>Profile</h1>
-	<p class="sub">
-		Multilingual registration (UK / AR / TR / RU / EN / DE), match requirements, and booking apps.
-	</p>
+	<h1>{t(lang, 'profile.title')}</h1>
+	<p class="sub">{t(lang, 'profile.sub')}</p>
 </div>
 
 <form class="card" id="requirements" onsubmit={save}>
-	<h2 class="section-title" style="margin-top:0">Match requirements</h2>
-	<p class="sub">Matching will not run until these are filled.</p>
-	<div class="field-row">
-		<div id="language">
-			<LanguageSelect id="lang" bind:value={form.language} required label="Preferred language" />
-		</div>
-		<div class="field">
-			<label for="specialty">Specialty</label>
-			<select id="specialty" bind:value={form.specialty} required>
-				<option value="">Select…</option>
-				<option>General Practitioner</option>
-				<option>Dermatology</option>
-				<option>Dentist</option>
-				<option>Ophthalmology</option>
-				<option>Cardiologist</option>
-			</select>
-		</div>
+	<h2 class="section-title" style="margin-top:0">{t(lang, 'profile.about')}</h2>
+	<div id="language">
+		<LanguageSelect id="lang" bind:value={form.language} required label="Preferred language" />
 	</div>
 	<div class="field-row">
 		<div class="field">
@@ -109,7 +96,7 @@
 		</select>
 	</div>
 	<div class="actions">
-		<button class="btn btn-primary" type="submit">Find matches</button>
+		<button class="btn btn-primary" type="submit">{t(lang, 'profile.save')}</button>
 		<SkipOnboardingButton role="patient" />
 	</div>
 </form>

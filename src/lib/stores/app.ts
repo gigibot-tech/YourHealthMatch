@@ -45,6 +45,25 @@ export const matchResults = writable<
 
 export const preferences = writable<{ language: string }>({ language: '' });
 
+const UI_LANG_KEY = 'yhm_ui_language';
+if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+	try {
+		const stored = localStorage.getItem(UI_LANG_KEY);
+		if (stored) preferences.set({ language: stored });
+	} catch {
+		/* ignore */
+	}
+}
+preferences.subscribe((prefs) => {
+	try {
+		if (typeof localStorage === 'undefined' || typeof localStorage.setItem !== 'function') return;
+		if (prefs.language) localStorage.setItem(UI_LANG_KEY, prefs.language);
+		else localStorage.removeItem(UI_LANG_KEY);
+	} catch {
+		/* ignore */
+	}
+});
+
 export function patchRequirements(patch: Partial<PatientRequirements>) {
 	return patientRepo.save(patch);
 }

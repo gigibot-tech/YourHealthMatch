@@ -52,13 +52,8 @@ export const demoPatientRequirements: PatientRequirements = {
 };
 
 /** Required for patient to reach /patient/match */
-export const MATCH_REQUIRED_PATIENT = [
-	'language',
-	'specialty',
-	'insurance',
-	'location',
-	'newPatient'
-] as const;
+/** Specialty is chosen per symptom, not asked on the profile. */
+export const MATCH_REQUIRED_PATIENT = ['language', 'insurance', 'location', 'newPatient'] as const;
 
 /** Required for practice to enter matching candidate pool */
 export const MATCH_REQUIRED_PRACTICE = [

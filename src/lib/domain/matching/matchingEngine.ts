@@ -12,7 +12,6 @@ import {
 import { practiceSpeaksLanguage } from './matchLanguages';
 import {
 	acceptsNewPatientsWhenRequired,
-	availabilityReason,
 	compareNextSlot,
 	compareProximity,
 	doctorHasNextSlot,
@@ -80,10 +79,9 @@ function evaluateDoctor(
 	const reasons = [
 		languageReason(requirements.language),
 		specialtyReason(requirements.specialty),
-		insuranceReason(requirements.insurance),
-		availabilityReason(nextSlot)
+		insuranceReason(requirements.insurance)
 	];
-	if (requirements.newPatient === true) reasons.push('Accepting new patients');
+	if (requirements.newPatient === true) reasons.push('Taking new patients');
 	const near = proximityReason(requirements, tier);
 	if (near) reasons.push(near);
 

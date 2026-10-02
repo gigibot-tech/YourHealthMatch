@@ -8,13 +8,22 @@
 		PATIENT_PROFILE_PATH,
 		DEMO_PATIENT_ID
 	} from '$lib/application/services';
-	import { bookingDraft, requirements, appointments } from '$lib/stores/app';
-	import ExternalSystemLinks from '$lib/components/external/ExternalSystemLinks.svelte';
+	import { bookingDraft, requirements, appointments, preferences } from '$lib/stores/app';
+	import { t, uiLanguage, type MessageKey } from '$lib/i18n';
 	import FactsCarousel from '$lib/components/facts/FactsCarousel.svelte';
-	import ContactPracticeForm from '$lib/components/patient/ContactPracticeForm.svelte';
+	import MatchResultCard from '$lib/components/patient/MatchResultCard.svelte';
+	import { recommendationsForPatient } from '$lib/application/careRecommendations';
 	import { languageLabel } from '$lib/domain/languages';
-	import { MATCH_RESULT_MAX } from '$lib/domain/matching/matchDefaults';
 	import type { MatchResult } from '$lib/domain/matching/matchingEngine';
+
+	let lang = $derived(uiLanguage($preferences.language));
+	function text(key: MessageKey) {
+		return t(lang, key);
+	}
+	function symptomText(id: string) {
+		if (id === 'unwell' || id === 'vision' || id === 'skin') return text(`symptom.${id}`);
+		return id;
+	}
 
 	let email = $state('');
 	let betaInterest = $state<'yes' | 'maybe' | 'no'>('maybe');
@@ -24,21 +33,29 @@
 		void $requirements;
 		return matchingService.isPatientReady();
 	});
-	let results = $derived.by(() => {
+	let recommendations = $derived.by(() => {
 		void $requirements;
 		void $appointments;
 		if (missing.length) return [];
-		return matchingService.findMatches();
+		return recommendationsForPatient($requirements, $appointments);
 	});
 
-	function pick(r: MatchResult) {
+	function logVisit(r: MatchResult) {
+		const q = new URLSearchParams({
+			practiceId: r.practiceId,
+			doctorId: r.doctorId
+		});
+		goto(`/patient/log?${q}`);
+	}
+
+	function pick(r: MatchResult, reason: string) {
 		bookingDraft.set({
-			requirements: $requirements,
+			requirements: { ...$requirements, specialty: reason },
 			practiceId: r.practiceId,
 			doctorId: r.doctorId,
 			matchScore: r.score,
 			modality: $requirements.modality,
-			reason: $requirements.specialty || 'Consultation'
+			reason
 		});
 		goto('/patient/book');
 	}
@@ -56,23 +73,9 @@
 				betaInterest,
 				requirements: $requirements
 			});
-			notice = 'You’re on the waitlist — we’ll notify you when matches appear.';
+			notice = 'Your email is saved on the waitlist.';
 		} catch (e) {
 			notice = e instanceof Error ? e.message : 'Could not join waitlist';
-		}
-	}
-
-	async function notifyPractice(practiceId: string) {
-		try {
-			await interestService.registerInterest({
-				email: email || 'notify@local.dev',
-				intent: 'notify_match',
-				practiceId,
-				requirements: $requirements
-			});
-			notice = 'We’ll notify you when a slot opens at this practice.';
-		} catch (e) {
-			notice = e instanceof Error ? e.message : 'Could not save interest';
 		}
 	}
 
@@ -81,20 +84,17 @@
 		void $requirements;
 		return factsService.forPatient(DEMO_PATIENT_ID);
 	});
-	let factHeading = $derived(
+	let hasUpcoming = $derived(
 		$appointments.some(
 			(a) =>
 				a.patientId === DEMO_PATIENT_ID &&
 				(a.status === 'requested' || a.status === 'confirmed')
 		)
-			? 'While you wait'
-			: 'Before you book'
 	);
 
 	let criteriaBits = $derived(
 		[
 			$requirements.language ? languageLabel($requirements.language) : '',
-			$requirements.specialty,
 			$requirements.insurance === 'self_pay' || $requirements.insurance === 'private'
 				? 'Selbstzahler'
 				: $requirements.insurance,
@@ -105,16 +105,13 @@
 </script>
 
 <div class="page-header">
-	<h1>Matches</h1>
-	<p class="sub">
-		Rule-based matches (language, specialty, insurance, open times, proximity). Showing up to
-		{MATCH_RESULT_MAX} doctors — not a long unstructured list.
-	</p>
+	<h1>{text('match.title')}</h1>
+	<p class="sub">{text('match.sub')}</p>
 </div>
 
 <div class="card match-criteria">
 	<div>
-		<h3 style="margin:0 0 0.25rem">From your profile</h3>
+		<h3 style="margin:0 0 0.25rem">{text('match.fromProfile')}</h3>
 		{#if criteriaBits.length}
 			<p class="detail" style="margin:0">{criteriaBits.join(' · ')}</p>
 		{:else}
@@ -124,33 +121,26 @@
 			<p class="detail" style="margin:0.35rem 0 0">Still needed: {missing.join(', ')}</p>
 		{/if}
 	</div>
-	<a class="btn btn-ghost btn-sm" href={PATIENT_PROFILE_PATH}>Edit requirements</a>
+	<a class="btn btn-ghost btn-sm" href={PATIENT_PROFILE_PATH}>{text('match.edit')}</a>
 </div>
 
-{#if factCards.length}
-	<FactsCarousel cards={factCards} heading={factHeading} compact />
+{#if !hasUpcoming && factCards.length}
+	<FactsCarousel cards={factCards} heading="Nothing booked yet" compact />
 {/if}
 
 {#if missing.length}
 	<div class="card">
-		<h3>Complete your profile to see matches</h3>
-		<p class="detail">Matching needs language, specialty, insurance, location, and new-patient.</p>
+		<h3>{text('match.needTitle')}</h3>
+		<p class="detail">{text('match.needBody')}</p>
 		<a class="btn btn-primary" href={PATIENT_PROFILE_PATH}>Open profile</a>
 	</div>
 {:else}
-	<ExternalSystemLinks
-		specialty={$requirements.specialty}
-		location={$requirements.location}
-		includeContext
-		title="Also open Doctolib / telemedicine apps"
-	/>
-	{#if results.length === 0}
+	{#if recommendations.every((rec) => !rec.covered && !rec.match)}
 		<div class="card">
-			<h3>No matches yet</h3>
+			<h3>No one with an opening yet</h3>
 			<p class="detail">
-				Join the waitlist, or
-				<a href={PATIENT_PROFILE_PATH}>change requirements</a>
-				(specialty, city, language).
+				Leave your email, or
+				<a href={PATIENT_PROFILE_PATH}>change city or language</a>.
 			</p>
 			<div class="field">
 				<label for="email">Email</label>
@@ -169,37 +159,31 @@
 		</div>
 	{:else}
 		{#if notice}<p class="detail">{notice}</p>{/if}
-		{#each results as r (r.practiceId + r.doctorId)}
-			{@const practice = practiceService.get(r.practiceId)}
-			{@const docName = doctorName(r.practiceId, r.doctorId)}
-			<div class="card">
-				<div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
-					<h3>{docName}</h3>
-					{#if r.nextSlot}
-						<span class="badge confirmed">{r.nextSlot.date} {r.nextSlot.time}</span>
-					{/if}
-				</div>
-				<p class="detail">{practice?.name} · {practice?.location}</p>
-				<ul class="reasons">
-					{#each r.reasons as reason}<li>{reason}</li>{/each}
-				</ul>
-				<div class="actions">
-					<button class="btn btn-primary btn-sm" type="button" onclick={() => pick(r)}>Book here</button>
-					<button
-						class="btn btn-ghost btn-sm"
-						type="button"
-						onclick={() => notifyPractice(r.practiceId)}>Notify me when a slot opens</button
-					>
-				</div>
-				<ContactPracticeForm compact practiceId={r.practiceId} doctorId={r.doctorId} />
-				<ExternalSystemLinks
-					compact
-					practiceId={r.practiceId}
-					doctorId={r.doctorId}
-					specialty={$requirements.specialty}
-					location={$requirements.location}
-				/>
-			</div>
+		{#each recommendations as rec (rec.id)}
+			<section class="symptom-block" aria-labelledby={`symptom-${rec.id}`}>
+				<h2 id={`symptom-${rec.id}`} class="symptom-label">{symptomText(rec.id)}</h2>
+				{#if rec.covered}
+					<div class="card symptom-covered">
+						<p class="detail">{text('match.covered')}</p>
+						<h3>{rec.covered.doctorName}</h3>
+						<p class="detail">
+							{rec.covered.practiceName} · {rec.covered.date} {rec.covered.time}
+						</p>
+					</div>
+				{:else if rec.match}
+					<MatchResultCard
+						result={rec.match}
+						practice={practiceService.get(rec.match.practiceId)}
+						doctorName={doctorName(rec.match.practiceId, rec.match.doctorId)}
+						location={$requirements.location}
+						quiet
+						onBook={() => pick(rec.match!, symptomText(rec.id))}
+						onLog={() => logVisit(rec.match!)}
+					/>
+				{:else}
+					<p class="detail">{text('match.none')}</p>
+				{/if}
+			</section>
 		{/each}
 	{/if}
 {/if}

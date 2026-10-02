@@ -87,33 +87,45 @@ export function acceptsNewPatientsWhenRequired(
 	return practice.acceptingNewPatients === true;
 }
 
+/** One patient-facing line for the next bookable opening. */
+export function formatNextOpening(slot: NextSlot): string {
+	const when = new Date(`${slot.date}T${slot.time}:00`);
+	return new Intl.DateTimeFormat('en-GB', {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+		hour: '2-digit',
+		minute: '2-digit'
+	}).format(when);
+}
+
 export function languageReason(patientLanguage: string): string {
 	return `Speaks ${languageLabel(patientLanguage)}`;
 }
 
 export function specialtyReason(specialty: string): string {
-	return `${specialty} offered`;
+	return specialty;
 }
 
 export function insuranceReason(insurance: PatientRequirements['insurance']): string {
-	if (insurance === 'GKV') return 'Accepts GKV (KV-approved)';
-	if (insurance === 'PKV') return 'Accepts PKV';
-	if (insurance === 'self_pay' || insurance === 'private') return 'Accepts Selbstzahler';
-	return `Accepts ${insurance}`;
+	if (insurance === 'GKV') return 'Public insurance (GKV)';
+	if (insurance === 'PKV') return 'Private insurance (PKV)';
+	if (insurance === 'self_pay' || insurance === 'private') return 'Self-pay';
+	return insurance;
 }
 
 export function availabilityReason(slot: NextSlot): string {
-	return `Next open ${slot.date} ${slot.time}`;
+	return `Next opening ${formatNextOpening(slot)}`;
 }
 
 export function proximityReason(
 	requirements: PatientRequirements,
 	tier: ProximityTier
 ): string | null {
-	if (requirements.modality === 'video') return 'Video visit — distance not required';
-	if (tier === 'exact_plz') return `Same PLZ ${requirements.postcode}`;
-	if (tier === 'same_city') return `Near ${requirements.location || requirements.city}`;
-	if (tier === 'prefix_plz') return `Nearby PLZ ${requirements.postcode}`;
+	if (requirements.modality === 'video') return 'Video visit';
+	if (tier === 'exact_plz') return `Same postcode ${requirements.postcode}`;
+	if (tier === 'same_city') return requirements.location || requirements.city || 'Nearby';
+	if (tier === 'prefix_plz') return `Near postcode ${requirements.postcode}`;
 	return null;
 }
 
