@@ -14,6 +14,10 @@ export type Appointment = {
 	status: AppointmentStatus;
 	modality: 'in_person' | 'video' | 'either';
 	channel: string;
+	/** Set when the doctor opens the video room. Patients join only after this. */
+	callStartedAt?: string;
+	/** Patient recorded a visit that was booked in another app (Doctolib, …). */
+	loggedExternally?: boolean;
 	requirements?: PatientRequirements;
 	cancelledAt?: string;
 	cancelledBy?: string;

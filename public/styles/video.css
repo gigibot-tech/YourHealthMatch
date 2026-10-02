@@ -1,5 +1,40 @@
 /* Video call view */
 
+.video-call {
+  max-width: 40rem;
+}
+
+.video-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.video-wait h1 {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.video-wait .eyebrow {
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.video-wait p {
+  margin: 0;
+}
+
+.video-error {
+  color: var(--color-danger);
+}
+
+/* Video call view */
+
 .video-page .page-header {
   margin-bottom: 1rem;
 }

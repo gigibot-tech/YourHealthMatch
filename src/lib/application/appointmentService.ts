@@ -86,6 +86,56 @@ export const appointmentService = {
 		return saved;
 	},
 
+	/** Doctor opens the room. The patient cannot join before this. */
+	startCall(id: string, now = new Date().toISOString()): Appointment {
+		const appt = appointmentRepo.get(id);
+		if (!appt) throw new Error('Appointment not found');
+		if (appt.status !== 'confirmed') throw new Error('Confirm the visit before starting video');
+		if (appt.modality === 'in_person') throw new Error('This visit is in person');
+		if (appt.callStartedAt) return appt;
+		return appointmentRepo.save({ ...appt, callStartedAt: now });
+	},
+
+	/**
+	 * Patient already booked on the practice’s app (Doctolib, …) and records it here.
+	 * Does not take a slot from this calendar.
+	 */
+	logExternal(input: {
+		practiceId: string;
+		doctorId: string;
+		date: string;
+		time: string;
+		reason: string;
+		modality: Appointment['modality'];
+		requirements?: PatientRequirements;
+		patientId?: string;
+		patientName?: string;
+	}): Appointment {
+		const practice = practiceRepo.get(input.practiceId);
+		if (!practice) throw new Error('Practice not found');
+		if (!practice.doctors.some((d) => d.id === input.doctorId)) {
+			throw new Error('Doctor not found');
+		}
+		if (!input.date || !input.time) throw new Error('Date and time are required');
+		const id = `appt_${Date.now()}`;
+		const appt: Appointment = {
+			id,
+			practiceId: input.practiceId,
+			doctorId: input.doctorId,
+			patientId: input.patientId ?? 'pat_demo',
+			patientName: input.patientName ?? 'Patient',
+			reason: input.reason.trim() || 'Consultation',
+			date: input.date,
+			time: input.time,
+			status: 'confirmed',
+			modality: input.modality === 'either' ? 'in_person' : input.modality,
+			channel: channelFor(id),
+			requirements: input.requirements,
+			loggedExternally: true
+		};
+		return appointmentRepo.save(appt);
+	},
+
 	get(id: string) {
 		return appointmentRepo.get(id);
 	},

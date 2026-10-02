@@ -12,6 +12,8 @@
 		includeContext = false,
 		/** Dashboard: only patient-saved (no context spam) */
 		onlySaved = false,
+		/** This visit: only the practice’s saved booking link (Doctolib, etc.) */
+		practiceOnly = false,
 		title = 'Open in another app',
 		compact = false
 	}: {
@@ -22,6 +24,7 @@
 		location?: string;
 		includeContext?: boolean;
 		onlySaved?: boolean;
+		practiceOnly?: boolean;
 		title?: string;
 		compact?: boolean;
 	} = $props();
@@ -36,14 +39,16 @@
 				label: `Open ${s.name}`
 			}));
 		}
-		return externalSystemService.launchesFor({
-			practiceId: practiceId || undefined,
-			doctorId: doctorId || undefined,
-			doctorName: doctorName || undefined,
-			specialty,
-			location,
-			includeContext
-		});
+		return externalSystemService
+			.launchesFor({
+				practiceId: practiceId || undefined,
+				doctorId: doctorId || undefined,
+				doctorName: doctorName || undefined,
+				specialty,
+				location,
+				includeContext
+			})
+			.filter((l) => !practiceOnly || l.reason === 'practice_channel');
 	});
 
 	function open(l: AppLaunch) {
@@ -56,7 +61,9 @@
 		<div class="actions">
 			{#each launches as l}
 				<button
-					class="btn btn-ghost btn-sm"
+					class="btn btn-sm"
+					class:btn-primary={l.reason === 'practice_channel'}
+					class:btn-ghost={l.reason !== 'practice_channel'}
 					type="button"
 					onclick={() => open(l)}
 					title="{l.name} ({l.reason})"

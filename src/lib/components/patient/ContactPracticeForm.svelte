@@ -43,10 +43,7 @@
 <details class="contact-practice" class:compact>
 	<summary class="btn btn-ghost" class:btn-sm={compact}>I want you to contact them</summary>
 	<form class="contact-form" onsubmit={send}>
-		<p class="detail">
-			We’ll email {interestService.contactEmail} so the team can reach this practice for you — same
-			flow as suggesting another booking app.
-		</p>
+		<p class="detail">We’ll email {interestService.contactEmail}. Your address is the reply-to.</p>
 		<div class="field">
 			<label for={`contact-email-${practiceId}`}>Your email</label>
 			<input
