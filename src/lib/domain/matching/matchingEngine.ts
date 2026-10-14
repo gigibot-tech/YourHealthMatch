@@ -4,6 +4,7 @@
  */
 import { missingRequired } from '$lib/safeMerge';
 import type { Doctor, Practice } from '../practice/practiceProfileDefaults';
+import { resolveVideoAccess } from '../video/videoAccess';
 import {
 	MATCH_REQUIRED_PRACTICE,
 	MATCH_RESULT_MAX,
@@ -21,6 +22,7 @@ import {
 	passesProximityRule,
 	proximityReason,
 	proximityTier,
+	videoReason,
 	specialtyMatchesDoctor,
 	specialtyReason,
 	type NextSlot,
@@ -75,6 +77,13 @@ function evaluateDoctor(
 	// (5) Geographic proximity for offline mediation
 	if (!passesProximityRule(requirements, practice)) return null;
 
+	// Video is not a sidebar destination: the clinic must offer it, and this doctor must not be turned off.
+	const video =
+		requirements.modality === 'video'
+			? resolveVideoAccess({ practice, doctor, modality: 'video' })
+			: null;
+	if (video?.kind === 'none') return null;
+
 	const tier = proximityTier(requirements, practice);
 	const reasons = [
 		languageReason(requirements.language),
@@ -82,7 +91,7 @@ function evaluateDoctor(
 		insuranceReason(requirements.insurance)
 	];
 	if (requirements.newPatient === true) reasons.push('Taking new patients');
-	const near = proximityReason(requirements, tier);
+	const near = video ? videoReason(video) : proximityReason(requirements, tier);
 	if (near) reasons.push(near);
 
 	return {

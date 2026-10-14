@@ -6,6 +6,12 @@
 	import { matchingService } from '$lib/application/services';
 	import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 	import { normalizeLanguageCode } from '$lib/domain/languages';
+	import {
+		parsePreferredWindow,
+		serializePreferredWindow,
+		TIME_BANDS,
+		type TimeBandId
+	} from '$lib/domain/scheduling/timeWindows';
 	import LanguageSelect from '$lib/components/i18n/LanguageSelect.svelte';
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
 	import SystemsPrefs from '$lib/components/patient/SystemsPrefs.svelte';
@@ -16,17 +22,36 @@
 		...$requirements,
 		language: normalizeLanguageCode($requirements.language) || $requirements.language
 	});
+	let bands = $state<TimeBandId[]>(parsePreferredWindow($requirements.preferredWindow));
 
 	onMount(() => {
 		const id = window.location.hash.replace('#', '');
 		if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	});
 
+	function toggleBand(id: TimeBandId) {
+		if (id === 'any') {
+			bands = ['any'];
+			return;
+		}
+		const withoutAny = bands.filter((b) => b !== 'any');
+		if (withoutAny.includes(id)) {
+			const next = withoutAny.filter((b) => b !== id);
+			bands = next.length ? next : ['any'];
+		} else {
+			bands = [...withoutAny, id];
+		}
+	}
+
 	function save(e: Event) {
 		e.preventDefault();
 		const language = normalizeLanguageCode(form.language) || form.language;
 		if (language) preferences.set({ language });
-		const saved = patchRequirements({ ...form, language } as Partial<PatientRequirements>);
+		const saved = patchRequirements({
+			...form,
+			language,
+			preferredWindow: serializePreferredWindow(bands)
+		} as Partial<PatientRequirements>);
 		const missing = matchingService.isPatientReady(saved);
 		if (missing.length) {
 			alert(`Still needed: ${missing.join(', ')}`);
@@ -95,6 +120,28 @@
 			<option value="video">Video</option>
 		</select>
 	</div>
+	<div class="field" id="time-bands">
+		<span class="field-label">When can you go?</span>
+		<p class="detail">Matching only offers clinic times in these bands.</p>
+		{#each TIME_BANDS as band}
+			<label>
+				<input
+					type="checkbox"
+					checked={bands.includes(band.id)}
+					onchange={() => toggleBand(band.id)}
+				/>
+				{band.label}
+			</label>
+		{/each}
+	</div>
+	{#if ($requirements.assignedDoctors ?? []).length}
+		<div class="field">
+			<span class="field-label">Your doctors</span>
+			{#each $requirements.assignedDoctors as a}
+				<p class="detail">{a.specialty} · {a.doctorId}</p>
+			{/each}
+		</div>
+	{/if}
 	<div class="actions">
 		<button class="btn btn-primary" type="submit">{t(lang, 'profile.save')}</button>
 		<SkipOnboardingButton role="patient" />
@@ -102,3 +149,18 @@
 </form>
 
 <SystemsPrefs />
+
+<style>
+	.field-label {
+		display: block;
+		font-size: 0.85rem;
+		font-weight: 600;
+		margin-bottom: 0.35rem;
+	}
+	#time-bands label {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin: 0.25rem 0;
+	}
+</style>

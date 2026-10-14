@@ -12,7 +12,9 @@
 		doctorName,
 		specialty = '',
 		location = '',
+		symptomId = '',
 		quiet = false,
+		assigned = false,
 		onBook,
 		onLog
 	}: {
@@ -21,8 +23,11 @@
 		doctorName: string;
 		specialty?: string;
 		location?: string;
+		symptomId?: string;
 		/** Hide the rule list. The symptom above the card is the reason. */
 		quiet?: boolean;
+		/** Saved Stamm doctor for this specialty. */
+		assigned?: boolean;
 		onBook: () => void;
 		onLog: () => void;
 	} = $props();
@@ -37,6 +42,7 @@
 <article class="card match-card">
 	<header class="match-card__head">
 		<h3>{doctorName}</h3>
+		{#if assigned}<p class="detail match-card__assigned">Your doctor for this specialty</p>{/if}
 		{#if opening}<p class="match-card__when">{opening}</p>{/if}
 	</header>
 	<p class="detail match-card__where">{practice?.name} · {practice?.location}</p>
@@ -65,5 +71,10 @@
 			<button class="btn btn-primary btn-sm" type="button" onclick={onBook}>Book here</button>
 		{/if}
 	</div>
-	<ContactPracticeForm compact practiceId={result.practiceId} doctorId={result.doctorId} />
+	<ContactPracticeForm
+		compact
+		practiceId={result.practiceId}
+		doctorId={result.doctorId}
+		{symptomId}
+	/>
 </article>

@@ -2,11 +2,12 @@
  * Five Phase-1 hard rules — one function per parameter.
  * All must pass for a doctor to enter the result set.
  */
+import { coordsForPostcode, withinRadiusKm, IN_PERSON_RADIUS_KM } from '../geo/localGeo';
 import type { Doctor, Practice } from '../practice/practiceProfileDefaults';
 import type { PatientRequirements } from './matchDefaults';
 import { languageLabel, practiceSpeaksLanguage } from './matchLanguages';
 
-export type ProximityTier = 'exact_plz' | 'same_city' | 'prefix_plz' | 'none';
+export type ProximityTier = 'exact_plz' | 'same_city' | 'prefix_plz' | 'radius' | 'none';
 
 export type NextSlot = { date: string; time: string };
 
@@ -47,6 +48,17 @@ export function doctorHasNextSlot(nextSlot: NextSlot | null | undefined): nextSl
 	return Boolean(nextSlot?.date && nextSlot?.time);
 }
 
+function practiceCoords(practice: Practice) {
+	if (typeof practice.lat === 'number' && typeof practice.lng === 'number') {
+		return { lat: practice.lat, lng: practice.lng };
+	}
+	return coordsForPostcode(practice.postcode);
+}
+
+function patientCoords(requirements: PatientRequirements) {
+	return coordsForPostcode(requirements.postcode);
+}
+
 export function proximityTier(
 	requirements: PatientRequirements,
 	practice: Practice
@@ -62,11 +74,16 @@ export function proximityTier(
 	if (reqPlz.length >= 2 && pPlz.length >= 2 && reqPlz.slice(0, 2) === pPlz.slice(0, 2)) {
 		return 'prefix_plz';
 	}
+
+	const from = patientCoords(requirements);
+	const to = practiceCoords(practice);
+	if (from && to && withinRadiusKm(from, to, IN_PERSON_RADIUS_KM)) return 'radius';
+
 	return 'none';
 }
 
 /**
- * Offline (in_person): must be near (city or PLZ).
+ * Offline (in_person): must be near (city, PLZ, or km radius when coords exist).
  * Video: proximity skipped.
  * Either: never excludes on distance.
  */
@@ -118,6 +135,15 @@ export function availabilityReason(slot: NextSlot): string {
 	return `Next opening ${formatNextOpening(slot)}`;
 }
 
+export function videoReason(access: {
+	kind: 'in_app' | 'external' | 'none';
+	systemName?: string;
+}): string | null {
+	if (access.kind === 'in_app') return 'Video in this app';
+	if (access.kind === 'external') return `Video on ${access.systemName || 'their booking system'}`;
+	return null;
+}
+
 export function proximityReason(
 	requirements: PatientRequirements,
 	tier: ProximityTier
@@ -126,6 +152,7 @@ export function proximityReason(
 	if (tier === 'exact_plz') return `Same postcode ${requirements.postcode}`;
 	if (tier === 'same_city') return requirements.location || requirements.city || 'Nearby';
 	if (tier === 'prefix_plz') return `Near postcode ${requirements.postcode}`;
+	if (tier === 'radius') return `Within ${IN_PERSON_RADIUS_KM} km`;
 	return null;
 }
 
@@ -133,7 +160,8 @@ const PROXIMITY_RANK: Record<ProximityTier, number> = {
 	exact_plz: 0,
 	same_city: 1,
 	prefix_plz: 2,
-	none: 3
+	radius: 3,
+	none: 4
 };
 
 export function compareProximity(a: ProximityTier, b: ProximityTier): number {

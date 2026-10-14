@@ -10,9 +10,9 @@ import { channelFor, type Appointment } from '$lib/domain/appointment/Appointmen
 import { hasClash, toISODate, type Slot } from '$lib/domain/scheduling/slotCalendar';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 import { appointmentRepo, practiceRepo } from '$lib/adapters/localRepos';
-import { availabilityStore } from '$lib/adapters/availabilityStore';
-import { availabilityService } from './availabilityService';
 import { toSlot } from '$lib/domain/scheduling/availability';
+import { resolveVideoAccess } from '$lib/domain/video/videoAccess';
+import { practiceService } from './practiceService';
 import { runTransitionHooks } from './transitionHooks';
 
 export type BookingDraft = {
@@ -38,12 +38,12 @@ export const appointmentService = {
 		if (!practice) throw new Error('Practice not found');
 		const doctorId = draft.doctorId;
 		if (!doctorId) throw new Error('Pick a doctor before booking');
-		const offered = availabilityStore
-			.list({
+		const offered = practiceService
+			.listBookable({
 				practiceId: draft.practiceId,
 				doctorId,
 				fromDate: draft.slot.date,
-				toDate: draft.slot.date
+				days: 1
 			})
 			.some((offer) => offer.time === draft.slot.time);
 		if (!offered) throw new Error('This doctor has not opened that time');
@@ -77,7 +77,7 @@ export const appointmentService = {
 		const saved = appointmentRepo.save(
 			safeMerge(appt, {
 				status: result.value,
-				...(action === 'cancel'
+				...(action === 'cancel' || action === 'reject'
 					? { cancelledAt: new Date(now).toISOString(), cancelledBy: actor }
 					: {})
 			})
@@ -92,6 +92,13 @@ export const appointmentService = {
 		if (!appt) throw new Error('Appointment not found');
 		if (appt.status !== 'confirmed') throw new Error('Confirm the visit before starting video');
 		if (appt.modality === 'in_person') throw new Error('This visit is in person');
+		const practice = practiceRepo.get(appt.practiceId);
+		const doctor = practice?.doctors.find((d) => d.id === appt.doctorId);
+		const access = resolveVideoAccess({ practice, doctor, modality: appt.modality });
+		if (access.kind === 'external') {
+			throw new Error(`This video visit opens on ${access.systemName}`);
+		}
+		if (access.kind !== 'in_app') throw new Error('This doctor is not enabled for video here');
 		if (appt.callStartedAt) return appt;
 		return appointmentRepo.save({ ...appt, callStartedAt: now });
 	},
@@ -164,7 +171,7 @@ export const appointmentService = {
 		days = 7,
 		doctorId?: string
 	) {
-		return availabilityService
+		return practiceService
 			.listBookable({ practiceId, doctorId, fromDate, days })
 			.map(toSlot);
 	}

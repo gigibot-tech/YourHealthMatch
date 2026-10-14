@@ -15,6 +15,7 @@ export type ContactRequestPayload = {
 	practiceId: string;
 	practiceName: string;
 	doctorName: string;
+	symptomId: string | null;
 	email: string;
 	note: string;
 	at: string;
@@ -39,6 +40,7 @@ export const interestService = {
 		email: string;
 		intent?: InterestIntent;
 		betaInterest?: BetaInterest;
+		symptomId?: string | null;
 		practiceId?: string | null;
 		note?: string;
 		requirements?: PatientRequirements;
@@ -51,6 +53,7 @@ export const interestService = {
 			email,
 			intent: input.intent ?? 'waitlist',
 			betaInterest: input.betaInterest ?? null,
+			symptomId: input.symptomId ?? null,
 			practiceId: input.practiceId ?? null,
 			note: (input.note || '').trim(),
 			requirements: input.requirements ?? patientRepo.get()
@@ -65,6 +68,7 @@ export const interestService = {
 		email: string;
 		practiceId: string;
 		doctorId?: string;
+		symptomId?: string;
 		note?: string;
 		requirements?: PatientRequirements;
 	}): Promise<{ interest: Interest; mailto: string }> {
@@ -78,6 +82,7 @@ export const interestService = {
 		const interest = await this.registerInterest({
 			email: input.email,
 			intent: 'contact_practice',
+			symptomId: input.symptomId ?? null,
 			practiceId: input.practiceId,
 			note,
 			requirements: reqs
@@ -86,6 +91,7 @@ export const interestService = {
 			practiceId: practice.id,
 			practiceName: practice.name,
 			doctorName: doctor?.name || '',
+			symptomId: interest.symptomId,
 			email: interest.email,
 			note,
 			at: new Date().toISOString()
@@ -120,5 +126,8 @@ export const interestService = {
 	},
 	forPractice(practiceId: string) {
 		return interestRepo.getAll().filter((i) => i.practiceId === practiceId);
+	},
+	forSymptom(symptomId: string) {
+		return interestRepo.getAll().filter((i) => i.symptomId === symptomId);
 	}
 };

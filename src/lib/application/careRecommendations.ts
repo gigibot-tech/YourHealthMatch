@@ -1,9 +1,10 @@
 /**
- * One recommended doctor per symptom. Coverage (you already have someone)
- * wins over a new match. Matching rules stay in the engine.
+ * Recommendations per symptom. Coverage or a saved Stamm doctor wins over a new match.
+ * Loads clinic supply (with patient time bands) and returns up to five doctors.
  */
 import type { Appointment } from '$lib/domain/appointment/Appointment';
 import { SYMPTOMS, type Symptom } from '$lib/domain/care/symptoms';
+import { assignedForSpecialty } from '$lib/domain/matching/assignedDoctors';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
 import type { MatchResult } from '$lib/domain/matching/matchingEngine';
 import { matchingService } from './matchingService';
@@ -18,6 +19,10 @@ export type CoveredVisit = {
 
 export type SymptomRecommendation = Symptom & {
 	covered: CoveredVisit | null;
+	/** Saved doctor for this specialty when they still pass the rules. */
+	assigned: MatchResult | null;
+	matches: MatchResult[];
+	/** First shown doctor: assigned if still matching, else first of matches. */
 	match: MatchResult | null;
 };
 
@@ -54,9 +59,34 @@ export function recommendationsForPatient(
 	requirements: PatientRequirements,
 	appointments: Appointment[]
 ): SymptomRecommendation[] {
-	return SYMPTOMS.map((symptom) => ({
-		...symptom,
-		covered: coveredVisit(symptom, appointments),
-		match: matchingService.findMatches({ ...requirements, specialty: symptom.specialty })[0] ?? null
-	}));
+	const supply = practiceService.clinicSupply(28, requirements.preferredWindow);
+	return SYMPTOMS.map((symptom) => {
+		const patient = {
+			...requirements,
+			specialty: symptom.specialty,
+			modality:
+				requirements.modality === 'either'
+					? symptom.defaultModality
+					: requirements.modality
+		};
+		const found = matchingService.findMatches({ patient, supply });
+		const saved = assignedForSpecialty(requirements.assignedDoctors ?? [], symptom.specialty);
+		const assigned =
+			(saved &&
+				found.find(
+					(m) => m.practiceId === saved.practiceId && m.doctorId === saved.doctorId
+				)) ||
+			null;
+		const matches = assigned
+			? [assigned, ...found.filter((m) => m.doctorId !== assigned.doctorId)]
+			: found;
+		const match = assigned ?? matches[0] ?? null;
+		return {
+			...symptom,
+			covered: coveredVisit(symptom, appointments),
+			assigned,
+			matches,
+			match
+		};
+	});
 }

@@ -2,6 +2,11 @@
 	import '../app.css';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import {
+		DOCTOR_PROFILE_PATH,
+		PATIENT_PROFILE_PATH,
+		portalRedirectForRole
+	} from '$lib/application/services';
 	import { preferences, role } from '$lib/stores/app';
 	import NavIcon from '$lib/components/shell/NavIcon.svelte';
 	import { registrationLanguageOptions, normalizeLanguageCode, getLanguage } from '$lib/domain/languages';
@@ -11,21 +16,21 @@
 	let menuOpen = $state(false);
 	const languageOptions = registrationLanguageOptions();
 
-	const patientLinks = [
-		{ href: '/patient/dashboard', key: 'nav.dashboard' as const, icon: 'dashboard' as const },
-		{ href: '/patient/match', key: 'nav.match' as const, icon: 'search' as const },
-		{ href: '/patient/requirements', key: 'nav.profile' as const, icon: 'user' as const },
-		{ href: '/video', key: 'nav.video' as const, icon: 'video' as const }
-	];
-	const doctorLinks = [
-		{ href: '/doctor/dashboard', key: 'nav.dashboard' as const, icon: 'dashboard' as const },
-		{ href: '/doctor/schedule', key: 'nav.schedule' as const, icon: 'schedule' as const },
-		{ href: '/doctor/practice', key: 'nav.practice' as const, icon: 'file' as const },
-		{ href: '/video', key: 'nav.video' as const, icon: 'video' as const }
-	];
 	let lang = $derived(uiLanguage($preferences.language));
 
-	let links = $derived($role === 'doctor' ? doctorLinks : patientLinks);
+	let links = $derived(
+		$role === 'doctor'
+			? [
+					{ href: '/doctor/dashboard', key: 'nav.dashboard' as const, icon: 'dashboard' as const },
+					{ href: '/doctor/schedule', key: 'nav.schedule' as const, icon: 'schedule' as const },
+					{ href: DOCTOR_PROFILE_PATH, key: 'nav.practice' as const, icon: 'file' as const }
+				]
+			: [
+					{ href: '/patient/dashboard', key: 'nav.dashboard' as const, icon: 'dashboard' as const },
+					{ href: '/patient/match', key: 'nav.match' as const, icon: 'search' as const },
+					{ href: PATIENT_PROFILE_PATH, key: 'nav.profile' as const, icon: 'user' as const }
+				]
+	);
 	let showShell = $derived.by(() => {
 		const path = $page.url.pathname;
 		if (path === '/') return false;
@@ -40,8 +45,16 @@
 
 	$effect(() => {
 		const path = $page.url.pathname;
-		if (path.startsWith('/doctor') && $role !== 'doctor') role.set('doctor');
-		else if (path.startsWith('/patient') && $role !== 'patient') role.set('patient');
+		const bounce = portalRedirectForRole($role, path);
+		if (bounce && bounce !== path) {
+			goto(bounce, { replaceState: true });
+			return;
+		}
+		// Resume role from URL only when unset — never flip an active session.
+		if (!$role) {
+			if (path.startsWith('/doctor')) role.set('doctor');
+			else if (path.startsWith('/patient')) role.set('patient');
+		}
 	});
 
 	$effect(() => {
@@ -57,8 +70,9 @@
 
 	function isActive(href: string) {
 		const path = $page.url.pathname;
-		if (href === '/video') return path === '/video';
-		return path === href || path.startsWith(`${href}/`);
+		const hrefPath = href.split('?')[0] || href;
+		if (hrefPath === '/video') return path === '/video';
+		return path === hrefPath || path.startsWith(`${hrefPath}/`);
 	}
 
 	function closeMenu() {

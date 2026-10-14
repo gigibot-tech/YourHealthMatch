@@ -3,6 +3,7 @@
 @import '../public/styles/dashboard.css';
 @import '../public/styles/doctor.css';
 @import '../public/styles/video.css';
+@import '../public/styles/landing.css';
 
 /* Svelte routes reuse vanilla portal chrome; aliases for leftover class names. */
 :root {

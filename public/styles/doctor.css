@@ -127,7 +127,20 @@
 
 .queue-panel h3 {
   font-size: 0.95rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.queue-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.85rem;
+  line-height: 1.4;
+}
+
+.queue-empty {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 .queue-item {
@@ -185,7 +198,25 @@
 
 .schedule-page {
   width: 100%;
-  max-width: 56rem;
+  max-width: 72rem;
+}
+
+.week-book-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.week-book-bar__label {
+  min-width: 7rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.week-book-legend {
+  margin: 0 0 0.65rem;
 }
 
 .schedule-header {
@@ -276,7 +307,15 @@
 }
 
 .schedule-bookings .section-title {
+  margin-bottom: 0.35rem;
+}
+
+.schedule-occupancy__head {
   margin-bottom: 0.75rem;
+}
+
+.schedule-occupancy__head .detail {
+  margin: 0;
 }
 
 .schedule-booking-list {
@@ -295,6 +334,19 @@
   grid-template-columns: 4.75rem minmax(0, 1fr) auto;
   gap: 0.55rem 0.75rem;
   align-items: center;
+}
+
+.schedule-booking--calm {
+  background: var(--color-white);
+}
+
+.schedule-queue-link {
+  margin: 0.85rem 0 0;
+  font-size: 0.875rem;
+}
+
+.schedule-queue-link a {
+  font-weight: 600;
 }
 
 .schedule-booking__time {

@@ -13,6 +13,7 @@ import type { Practice } from '../practice/practiceProfileDefaults';
 import {
 	insuranceAcceptedByPractice,
 	passesProximityRule,
+	proximityTier,
 	specialtyMatchesDoctor
 } from './matchRules';
 import { normalizeLanguageCode, practiceSpeaksLanguage } from '../languages';
@@ -42,12 +43,15 @@ const completePractice: Practice = safeMerge(practiceProfileDefaults, {
 	postcode: '17489',
 	acceptingNewPatients: true,
 	onboardingStatus: 'available_for_matching' as const,
+	modalities: ['in_person', 'video'],
+	bookingChannel: 'direct' as const,
 	doctors: [
 		{
 			id: 'doc_1',
 			practiceId: 'prac_1',
 			name: 'Dr. Chen',
-			specialty: 'Dermatology'
+			specialty: 'Dermatology',
+			videoEnabled: true
 		}
 	]
 });
@@ -107,6 +111,21 @@ describe('matchRules', () => {
 		expect(passesProximityRule(safeMerge(completePatient, { modality: 'either' }), far)).toBe(
 			true
 		);
+	});
+
+	it('accepts in-person via km radius when PLZ and city differ but coords are near', () => {
+		const neighbour = safeMerge(completePractice, {
+			location: 'Wiek',
+			postcode: '18507',
+			lat: 54.31,
+			lng: 13.09
+		});
+		expect(
+			passesProximityRule(safeMerge(completePatient, { modality: 'in_person' }), neighbour)
+		).toBe(true);
+		expect(
+			proximityTier(safeMerge(completePatient, { modality: 'in_person' }), neighbour)
+		).toBe('radius');
 	});
 
 	it('matches specialty on the doctor', () => {
@@ -207,6 +226,19 @@ describe('matchingEngine', () => {
 				nextSlotByDoctor: slotsFor('doc_1')
 			})
 		).toHaveLength(1);
+	});
+
+	it('drops a video request when that doctor is not enabled', () => {
+		const disabled = safeMerge(completePractice, {
+			doctors: completePractice.doctors.map((d) => ({ ...d, videoEnabled: false }))
+		});
+		expect(
+			findMatches({
+				requirements: safeMerge(completePatient, { modality: 'video' }),
+				practices: [disabled],
+				nextSlotByDoctor: slotsFor('doc_1')
+			})
+		).toEqual([]);
 	});
 
 	it('returns one result per matching doctor at the same practice', () => {

@@ -1,5 +1,6 @@
 /**
- * External systems application layer — prefs, open URLs, suggest-other + notify.
+ * External systems application layer — patient prefs, suggest-other + notify.
+ * Practice booking links live on practiceService.bookingLink.
  * Catalog SSOT: domain/externalSystems/catalog.ts
  */
 import {
@@ -16,9 +17,8 @@ import {
 	SUGGEST_OTHER_ID,
 	CONTACT_EMAIL
 } from '$lib/domain/externalSystems/catalog';
-import type { Practice } from '$lib/domain/practice/practiceProfileDefaults';
-import { practiceRepo } from '$lib/adapters/localRepos';
 import { safeMerge } from '$lib/safeMerge';
+import { practiceService } from './practiceService';
 
 export type SuggestionNotifyPayload = {
 	name: string;
@@ -126,8 +126,7 @@ export const externalSystemService = {
 	},
 
 	/**
-	 * Where to show launch buttons: patient prefs ∪ practice channel ∪ optional doctor.
-	 * Pass practiceId to load practice bookingChannel / bookingUrl / doctor name.
+	 * Launch buttons: practice booking link (from practiceService) ∪ patient-saved apps.
 	 */
 	launchesFor(input: {
 		practiceId?: string;
@@ -137,25 +136,42 @@ export const externalSystemService = {
 		location?: string;
 		includeContext?: boolean;
 	}): AppLaunch[] {
-		const practice: Practice | null = input.practiceId
-			? practiceRepo.get(input.practiceId)
-			: null;
-		const doctor =
-			practice && input.doctorId
-				? practice.doctors.find((d) => d.id === input.doctorId)
-				: undefined;
-		const doctorName = input.doctorName || doctor?.name;
+		const out: AppLaunch[] = [];
+		const seen = new Set<string>();
 
-		return resolveLaunches({
+		if (input.practiceId) {
+			const link = practiceService.bookingLink(input.practiceId, input.doctorId);
+			if (link) {
+				const practice = practiceService.get(input.practiceId);
+				const doctor = input.doctorId
+					? practice?.doctors.find((d) => d.id === input.doctorId)
+					: practice?.doctors[0];
+				const doctorName = input.doctorName || doctor?.name;
+				seen.add(link.id);
+				out.push({
+					id: link.id,
+					name: link.name,
+					href: link.href,
+					reason: 'practice_channel',
+					label: doctorName
+						? `Open ${doctorName} on ${link.name}`
+						: `Book on ${link.name}`
+				});
+			}
+		}
+
+		const patientLaunches = resolveLaunches({
 			patientSystemIds: load().systemIds,
-			practiceChannel: practice?.bookingChannel,
-			practiceBookingUrl: practice?.bookingUrl,
-			practiceName: practice?.name,
-			doctorName,
-			specialty: input.specialty || doctor?.specialty,
-			location: input.location || practice?.location,
+			specialty: input.specialty,
+			location: input.location,
 			includeContext: input.includeContext
 		});
+		for (const launch of patientLaunches) {
+			if (seen.has(launch.id)) continue;
+			seen.add(launch.id);
+			out.push(launch);
+		}
+		return out;
 	},
 
 	launch(href: string) {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { appointmentService, practiceService, DEMO_PATIENT_ID } from '$lib/application/services';
+	import { practiceService, visitPipeline, DEMO_PATIENT_ID } from '$lib/application/services';
 	import { requirements } from '$lib/stores/app';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 
@@ -26,14 +26,17 @@
 			return;
 		}
 		try {
-			appointmentService.logExternal({
+			visitPipeline.logExternal({
 				practiceId: practice.id,
 				doctorId: doctor.id,
 				date,
 				time,
 				reason,
 				modality,
-				requirements: $requirements,
+				requirements: {
+					...$requirements,
+					specialty: doctor.specialty || $requirements.specialty
+				},
 				patientId: DEMO_PATIENT_ID,
 				patientName: 'John Doe'
 			});

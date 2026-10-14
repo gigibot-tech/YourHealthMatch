@@ -23,6 +23,8 @@ export type Doctor = {
 	practiceId: string;
 	name: string;
 	specialty: string;
+	/** This doctor may take video visits. The clinic must be video-enabled too. */
+	videoEnabled?: boolean;
 };
 
 export type Practice = {
@@ -35,6 +37,9 @@ export type Practice = {
 	kvApproved: boolean;
 	location: string;
 	postcode: string;
+	/** Optional; used for in-person radius when the patient also has coords. */
+	lat?: number;
+	lng?: number;
 	acceptingNewPatients: boolean | null;
 	availabilitySlots: { date: string; time: string }[];
 	weeklyHours: WeeklyHours;

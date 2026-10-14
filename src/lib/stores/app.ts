@@ -1,8 +1,9 @@
 import { readable, writable } from 'svelte/store';
 import { appointmentRepo, patientRepo, practiceRepo } from '$lib/adapters/localRepos';
 import { availabilityStore } from '$lib/adapters/availabilityStore';
+import { localNotificationStore } from '$lib/adapters/localNotificationAdapter';
 import type { PatientRequirements } from '$lib/domain/matching/matchDefaults';
-import type { BookingDraft } from '$lib/application/services';
+import type { VisitDraft } from '$lib/application/services';
 import { patientRequirementsDefaults } from '$lib/domain/matching/matchDefaults';
 
 export const appointments = readable(appointmentRepo.getAll(), (set) =>
@@ -13,6 +14,10 @@ export const practices = readable(practiceRepo.getAll(), (set) => practiceRepo.s
 
 export const availability = readable(availabilityStore.list(), (set) =>
 	availabilityStore.subscribe(() => set(availabilityStore.list()))
+);
+
+export const patientNotifications = readable(localNotificationStore.listForPatient(''), (set) =>
+	localNotificationStore.subscribe((all) => set(all.slice()))
 );
 
 export const requirements = readable(patientRepo.get(), (set) => patientRepo.subscribe(set));
@@ -38,7 +43,7 @@ role.subscribe((r) => {
 	}
 });
 
-export const bookingDraft = writable<Partial<BookingDraft>>({});
+export const bookingDraft = writable<Partial<VisitDraft>>({});
 export const matchResults = writable<
 	{ practiceId: string; doctorId?: string; score: number; reasons: string[] }[]
 >([]);

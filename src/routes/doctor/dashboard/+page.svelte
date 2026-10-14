@@ -1,7 +1,6 @@
 <script lang="ts">
 	import {
 		appointmentService,
-		availabilityService,
 		DEMO_DOCTOR_ID,
 		DEMO_PRACTICE_ID,
 		factsService,
@@ -11,6 +10,7 @@
 	import { fill, greetingKey, t, uiLanguage } from '$lib/i18n';
 	import { CANCEL_MIN_NOTICE_HOURS } from '$lib/config/clinicPolicy';
 	import { CHANNEL_TO_SYSTEM, getSystemById } from '$lib/domain/externalSystems/catalog';
+	import { resolveVideoAccess, type VideoAccess } from '$lib/domain/video/videoAccess';
 	import { goto } from '$app/navigation';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import {
@@ -39,20 +39,33 @@
 		firstName(doctorName.replace(', M.D.', '').replace(/^Dr\.?\s+/i, ''))
 	);
 
-	let upcoming = $derived(
+	let todays = $derived(
 		$appointments
 			.filter(
 				(a) =>
 					a.practiceId === practiceId &&
 					a.doctorId === doctorId &&
-					a.date >= today &&
+					a.date === today &&
+					a.status !== 'cancelled' &&
+					a.status !== 'rejected'
+			)
+			.map((a) => appointmentService.view(a, 'doctor'))
+			.sort((a, b) => a.time.localeCompare(b.time))
+	);
+	/** Future days only — today is owned by the timeline + next-patient strip. */
+	let later = $derived(
+		$appointments
+			.filter(
+				(a) =>
+					a.practiceId === practiceId &&
+					a.doctorId === doctorId &&
+					a.date > today &&
 					a.status !== 'cancelled' &&
 					a.status !== 'rejected'
 			)
 			.map((a) => appointmentService.view(a, 'doctor'))
 			.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
 	);
-	let todays = $derived(upcoming.filter((a) => a.date === today));
 	let pending = $derived(
 		$appointments
 			.filter(
@@ -62,13 +75,14 @@
 					a.status === 'requested'
 			)
 			.map((a) => appointmentService.view(a, 'doctor'))
+			.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
 	);
 	let next = $derived(todays.find((a) => a.status === 'confirmed') || todays[0] || null);
 	let byId = $derived(Object.fromEntries(todays.map((a) => [a.id, a])));
 	let timeline = $derived.by(() => {
 		void $availability;
 		void $appointments;
-		return availabilityService.dayTimeline({ practiceId, doctorId, date: today });
+		return practiceService.dayTimeline({ practiceId, doctorId, date: today });
 	});
 	let factCards = $derived.by(() => {
 		void $appointments;
@@ -77,6 +91,16 @@
 	let factHeading = $derived(
 		todays.length || pending.length ? 'Clinic facts' : 'Before the first booking'
 	);
+
+	function videoPlace(visit: {
+		practiceId: string;
+		doctorId?: string;
+		modality: 'in_person' | 'video' | 'either';
+	}): VideoAccess {
+		const clinic = practiceService.get(visit.practiceId);
+		const doctor = clinic?.doctors.find((d) => d.id === visit.doctorId);
+		return resolveVideoAccess({ practice: clinic, doctor, modality: visit.modality });
+	}
 
 	function bookerName(practiceId: string) {
 		const id = CHANNEL_TO_SYSTEM[practiceService.get(practiceId)?.bookingChannel || ''];
@@ -89,7 +113,10 @@
 			: t(lang, 'visit.cancel');
 	}
 
-	async function act(id: string, action: Extract<ActionId, 'confirm' | 'reject' | 'cancel' | 'join_video'>) {
+	async function act(
+		id: string,
+		action: Extract<ActionId, 'confirm' | 'reject' | 'cancel' | 'complete' | 'join_video'>
+	) {
 		try {
 			if (action === 'join_video') {
 				goto(`/video?id=${id}&role=doctor`);
@@ -112,15 +139,18 @@
 
 	function timelineClick(id: string, status: string) {
 		if (status === 'requested') act(id, 'confirm');
-		else if (status === 'confirmed') act(id, 'join_video');
-		else goto(`/doctor/appointment/${id}`);
+		else if (status === 'confirmed') {
+			const visit = $appointments.find((a) => a.id === id);
+			if (visit && videoPlace(visit).kind === 'in_app') act(id, 'join_video');
+			else goto(`/doctor/appointment/${id}`);
+		} else goto(`/doctor/appointment/${id}`);
 	}
 </script>
 
 <div class="page-header">
 	<div>
 		<h1>{t(lang, greetingKey())}, {helloName}</h1>
-		<p class="sub">Today’s clinic and every visit still ahead.</p>
+		<p class="sub">Confirm requests, run today’s visits, and see what’s coming next.</p>
 		<p class="policy-hint">{fill(lang, 'policy.cancel', { hours: String(CANCEL_MIN_NOTICE_HOURS) })}</p>
 	</div>
 </div>
@@ -131,11 +161,20 @@
 	<div class="pending-strip">
 		{#each pending as a}
 			<div class="pending-chip">
-				<span><strong>{a.patientName}</strong> · {formatTime(a.time)} · {a.reason}</span>
+				<span
+					><strong>{a.patientName}</strong> · {a.date === today
+						? formatTime(a.time)
+						: `${formatApptDate(a.date)} · ${formatTime(a.time)}`} · {a.reason}</span
+				>
 				<div class="appt-actions">
 					<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'confirm')}
 						>Confirm</button
 					>
+					{#if a.allowedActions.includes('reject')}
+						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'reject')}
+							>Decline</button
+						>
+					{/if}
 					{#if a.allowedActions.includes('cancel')}
 						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'cancel')}
 							>{removalLabel(a)}</button
@@ -149,6 +188,7 @@
 
 {#if next}
 	{@const n = next}
+	{@const place = videoPlace(n)}
 	<div class="next-patient">
 		<div class="eyebrow">Next patient</div>
 		<h2>{n.patientName}</h2>
@@ -160,9 +200,21 @@
 					<button class="btn btn-primary" type="button" onclick={() => act(n.id, 'confirm')}
 						>Confirm visit</button
 					>
-				{:else if n.allowedActions.includes('join_video')}
+					{#if n.allowedActions.includes('reject')}
+						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(n.id, 'reject')}
+							>Decline</button
+						>
+					{/if}
+				{:else if n.allowedActions.includes('join_video') && place.kind === 'in_app'}
 					<button class="btn btn-primary" type="button" onclick={() => act(n.id, 'join_video')}
 						>{n.callStartedAt ? 'Rejoin visit' : 'Start visit'}</button
+					>
+				{:else if place.kind === 'external'}
+					<p class="detail">Video opens on {place.systemName}</p>
+				{/if}
+				{#if n.allowedActions.includes('complete')}
+					<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(n.id, 'complete')}
+						>Complete</button
 					>
 				{/if}
 				{#if n.allowedActions.includes('cancel')}
@@ -214,11 +266,15 @@
 	</div>
 
 	<aside class="queue-panel">
-		<h3>{t(lang, 'dash.upcoming')}</h3>
-		{#if upcoming.length === 0}
-			<p style="color:var(--color-text-muted);font-size:0.875rem">No visits ahead.</p>
+		<h3>{t(lang, 'dash.later')}</h3>
+		<p class="queue-hint">
+			Today lives in the timeline. Open times on
+			<a href="/doctor/schedule">Schedule</a>.
+		</p>
+		{#if later.length === 0}
+			<p class="queue-empty">Nothing booked after today.</p>
 		{:else}
-			{#each upcoming as a}
+			{#each later as a}
 				<div class="queue-item">
 					<div class="name">{a.patientName} <span class={badgeClass(a.badge)}>{a.label}</span></div>
 					<div class="info">{formatApptDate(a.date)} · {formatTime(a.time)} · {a.reason}</div>
@@ -227,10 +283,11 @@
 							<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'confirm')}
 								>Confirm</button
 							>
-						{:else if a.allowedActions.includes('join_video')}
-							<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'join_video')}
-								>{a.callStartedAt ? 'Rejoin' : 'Start visit'}</button
-							>
+							{#if a.allowedActions.includes('reject')}
+								<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'reject')}
+									>Decline</button
+								>
+							{/if}
 						{/if}
 						{#if a.allowedActions.includes('cancel')}
 							<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'cancel')}

@@ -2,19 +2,48 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { get } from 'svelte/store';
 import { demoPatientRequirements } from '$lib/domain/matching/matchDefaults';
 import { matchingService } from './matchingService';
+import { practiceService } from './practiceService';
 import { patientRepo, practiceRepo } from '$lib/adapters/localRepos';
 import { availabilityStore } from '$lib/adapters/availabilityStore';
 import {
 	applyDemoPatientData,
 	canSkipOnboarding,
 	DEMO_PRACTICE_ID,
+	DOCTOR_PROFILE_PATH,
+	homePathForRole,
 	PATIENT_PROFILE_PATH,
-	startSession
+	portalRedirectForRole,
+	startSession,
+	videoPathForRole
 } from './session';
 import { preferences, role } from '$lib/stores/app';
 import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 import { practiceProfileDefaults } from '$lib/domain/practice/practiceProfileDefaults';
 import { safeMerge } from '$lib/safeMerge';
+
+describe('portal role guard', () => {
+	it('keeps doctors out of the patient portal', () => {
+		expect(portalRedirectForRole('doctor', '/patient/dashboard')).toBe('/doctor/dashboard');
+		expect(portalRedirectForRole('doctor', '/patient/match')).toBe('/doctor/dashboard');
+		expect(portalRedirectForRole('doctor', PATIENT_PROFILE_PATH)).toBe(DOCTOR_PROFILE_PATH);
+		expect(portalRedirectForRole('doctor', '/doctor/dashboard')).toBeNull();
+		expect(portalRedirectForRole('doctor', '/video')).toBeNull();
+	});
+
+	it('keeps patients out of the doctor portal', () => {
+		expect(portalRedirectForRole('patient', '/doctor/dashboard')).toBe('/patient/dashboard');
+		expect(portalRedirectForRole('patient', DOCTOR_PROFILE_PATH)).toBe('/patient/dashboard');
+		expect(portalRedirectForRole('patient', '/patient/match')).toBeNull();
+		expect(portalRedirectForRole(null, '/patient/dashboard')).toBeNull();
+	});
+
+	it('tags video entry with the session role', () => {
+		expect(videoPathForRole('doctor')).toBe('/video?role=doctor');
+		expect(videoPathForRole('patient')).toBe('/video?role=patient');
+		expect(homePathForRole('doctor')).toBe('/doctor/dashboard');
+		expect(homePathForRole('patient')).toBe('/patient/dashboard');
+	});
+});
 
 describe('session start', () => {
 	beforeEach(() => {
@@ -40,13 +69,13 @@ describe('session start', () => {
 		const saved = patientRepo.get();
 		expect(saved).toMatchObject(demoPatientRequirements);
 		expect(matchingService.isPatientReady(saved)).toEqual([]);
-		expect(matchingService.findMatches(saved).length).toBeGreaterThan(0);
+		expect(matchingService.findMatches({ patient: saved, supply: practiceService.clinicSupply() }).length).toBeGreaterThan(0);
 		expect(applyDemoPatientData()).toMatchObject(demoPatientRequirements);
 	});
 
 	it('sends a new doctor to practice setup, or dashboard when skipping', () => {
 		expect(canSkipOnboarding('doctor')).toBe(true);
-		expect(startSession({ role: 'doctor', skipOnboarding: false })).toBe('/doctor/practice');
+		expect(startSession({ role: 'doctor', skipOnboarding: false })).toBe(DOCTOR_PROFILE_PATH);
 		expect(get(role)).toBe('doctor');
 		expect(startSession({ role: 'doctor', skipOnboarding: true })).toBe('/doctor/dashboard');
 	});
@@ -111,7 +140,7 @@ describe('canSkipOnboarding', () => {
 			durationMin: 30
 		});
 		expect(canSkipOnboarding('doctor')).toBe(false);
-		expect(matchingService.findMatches(demoPatientRequirements).length).toBeGreaterThan(0);
+		expect(matchingService.findMatches({ patient: demoPatientRequirements, supply: practiceService.clinicSupply() }).length).toBeGreaterThan(0);
 		expect(canSkipOnboarding('patient')).toBe(true);
 	});
 
@@ -121,6 +150,6 @@ describe('canSkipOnboarding', () => {
 		expect(canSkipOnboarding('patient')).toBe(false);
 		expect(canSkipOnboarding('doctor')).toBe(false);
 		expect(startSession({ role: 'patient', skipOnboarding: true })).toBe(PATIENT_PROFILE_PATH);
-		expect(startSession({ role: 'doctor', skipOnboarding: true })).toBe('/doctor/practice');
+		expect(startSession({ role: 'doctor', skipOnboarding: true })).toBe(DOCTOR_PROFILE_PATH);
 	});
 });

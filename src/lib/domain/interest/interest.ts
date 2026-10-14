@@ -15,6 +15,8 @@ export type Interest = {
 	id: string;
 	email: string;
 	requirements: PatientRequirements;
+	/** Symptom that had no doctor (or the row the patient contacted from). */
+	symptomId: string | null;
 	practiceId: string | null;
 	intent: InterestIntent;
 	betaInterest: BetaInterest;
@@ -26,6 +28,7 @@ export const interestDefaults: Interest = {
 	id: '',
 	email: '',
 	requirements: { ...patientRequirementsDefaults },
+	symptomId: null,
 	practiceId: null,
 	intent: 'waitlist',
 	betaInterest: null,
@@ -34,6 +37,7 @@ export const interestDefaults: Interest = {
 };
 
 export type DemandBucket = {
+	symptomId: string;
 	specialty: string;
 	language: string;
 	location: string;
@@ -50,17 +54,19 @@ export function buildInterest(patch: Partial<Interest>, now = new Date()): Inter
 		patientRequirementsDefaults,
 		patch.requirements ?? merged.requirements
 	);
+	merged.symptomId = patch.symptomId ?? merged.symptomId ?? null;
 	return merged;
 }
 
 export function aggregateDemand(interests: Interest[]): DemandBucket[] {
 	const map = new Map<string, DemandBucket>();
 	for (const i of interests) {
+		const symptomId = i.symptomId || 'any';
 		const specialty = i.requirements.specialty || 'any';
 		const language = i.requirements.language || 'any';
 		const location = i.requirements.location || i.requirements.city || 'any';
-		const key = `${specialty}|${language}|${location}`;
-		const cur = map.get(key) ?? { specialty, language, location, count: 0 };
+		const key = `${symptomId}|${specialty}|${language}|${location}`;
+		const cur = map.get(key) ?? { symptomId, specialty, language, location, count: 0 };
 		cur.count += 1;
 		map.set(key, cur);
 	}

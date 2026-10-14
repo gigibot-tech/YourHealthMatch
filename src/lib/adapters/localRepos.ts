@@ -113,6 +113,8 @@ function seedPractices(): Practice[] {
 			kvApproved: true,
 			location: 'Greifswald',
 			postcode: '17489',
+			lat: 54.0865,
+			lng: 13.3923,
 			acceptingNewPatients: true,
 			onboardingStatus: 'available_for_matching' as const,
 			modalities: ['in_person', 'video'],
@@ -122,13 +124,15 @@ function seedPractices(): Practice[] {
 					id: 'doc_turner',
 					practiceId: 'prac_turner',
 					name: 'Dr. Olivia Turner, M.D.',
-					specialty: 'Ophthalmology'
+					specialty: 'Ophthalmology',
+					videoEnabled: true
 				},
 				{
 					id: 'doc_chen',
 					practiceId: 'prac_turner',
 					name: 'Dr. Michael Chen',
-					specialty: 'Dermatology'
+					specialty: 'Dermatology',
+					videoEnabled: true
 				}
 			]
 		}),
@@ -141,6 +145,8 @@ function seedPractices(): Practice[] {
 			kvApproved: true,
 			location: 'Greifswald',
 			postcode: '17489',
+			lat: 54.095,
+			lng: 13.41,
 			acceptingNewPatients: true,
 			onboardingStatus: 'available_for_matching' as const,
 			bookingChannel: 'doctolib' as const,
@@ -150,7 +156,8 @@ function seedPractices(): Practice[] {
 					id: 'doc_davis',
 					practiceId: 'prac_davis',
 					name: 'Dr. Emily Davis',
-					specialty: 'General Practitioner'
+					specialty: 'General Practitioner',
+					videoEnabled: true
 				}
 			]
 		})

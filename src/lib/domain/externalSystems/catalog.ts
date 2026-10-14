@@ -87,7 +87,7 @@ export const EXTERNAL_SYSTEMS: ExternalSystem[] = [
 		url: '/video',
 		specialties: [],
 		locations: [],
-		blurb: 'Built-in video visit (Agora) when you book here'
+		blurb: 'In-app room for a visit, only when that doctor is video-enabled and the clinic books here'
 	}
 ];
 

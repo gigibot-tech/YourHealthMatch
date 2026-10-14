@@ -446,7 +446,7 @@ export const FACT_CARDS: FactCard[] = [
 			year: 2024,
 			note: 'National TSS search mix, not MV panel demand.'
 		},
-		href: '/doctor/practice',
+		href: '/doctor/practice#specialties',
 		hrefLabel: 'Update specialties',
 		region: 'Germany'
 	},
@@ -460,22 +460,22 @@ export const FACT_CARDS: FactCard[] = [
 			url: 'https://www.zi.de/das-zi/medien/medieninformationen-und-statements/detailansicht/anzahl-der-videosprechstunden-auf-27-millionen-gestiegen-gesamtfallzahl-2024-mit-579-millionen-leicht-ueber-hohem-vorjahresniveau-zum-teil-deutliches-plus-bei-frueherkennungsuntersuchungen',
 			year: 2024
 		},
-		href: '/doctor/practice',
-		hrefLabel: 'Set visit modalities',
+		href: '/doctor/practice#modalities',
+		hrefLabel: 'Set visit types',
 		region: 'Germany'
 	},
 	{
 		id: 'doctor-language',
 		audience: 'doctor',
 		title: 'Language is a demand signal',
-		body: 'Destatis figures reported for 2023: about 15% of people in Germany do not primarily speak German at home. Interpreting is generally not paid by GKV. Listing English, Arabic or other languages on your profile is how patients in this app find you.',
+		body: 'Destatis figures reported for 2023: about 15% of people in Germany do not primarily speak German at home. Interpreting is generally not paid by GKV. Listing English, Arabic or other languages on your practice is how patients in this app find you.',
 		source: {
 			label: 'Destatis (via Deutsche Welle)',
 			url: 'https://www.dw.com/en/germanys-health-care-system-has-a-language-problem/a-70652431',
 			year: 2023,
 			note: 'DW citing Destatis; not a billing statistic.'
 		},
-		href: '/doctor/practice',
+		href: '/doctor/practice#languages',
 		hrefLabel: 'Edit practice languages',
 		region: 'Germany',
 		when: 'always'
@@ -490,7 +490,7 @@ export const FACT_CARDS: FactCard[] = [
 			url: 'https://www.aerzteblatt.de/news/gesetzlich-versicherte-warten-im-schnitt-funf-wochen-auf-facharzttermin-b2b64c64-4546-4775-a6fe-91b31e296bd8',
 			year: 2024
 		},
-		href: '/doctor/practice',
+		href: '/doctor/practice#new-patients',
 		hrefLabel: 'New-patient setting',
 		region: 'Germany',
 		when: 'always'
@@ -513,8 +513,8 @@ export const FACT_CARDS: FactCard[] = [
 		id: 'doctor-external-gap',
 		audience: 'doctor',
 		title: 'External diaries are not imported',
-		body: 'A Doctolib, Doctena, arzt-direkt or CGM channel on the practice profile is a launch shortcut for patients. It does not sync that vendor’s calendar into this queue. Seeded Davis/Doctolib visits are local records with an external channel tag — not a live Doctolib pull.',
-		href: '/doctor/practice',
+		body: 'A Doctolib, Doctena, arzt-direkt or CGM channel on the practice is a launch shortcut for patients. It does not sync that vendor’s calendar into this queue. Seeded Davis/Doctolib visits are local records with an external channel tag — not a live Doctolib pull.',
+		href: '/doctor/practice#booking',
 		hrefLabel: 'Booking channel',
 		when: 'always'
 	},
@@ -522,7 +522,7 @@ export const FACT_CARDS: FactCard[] = [
 		id: 'doctor-external-linked',
 		audience: 'doctor',
 		title: 'A visit is tagged to an external channel',
-		body: 'At least one upcoming visit is at a practice profile that lists Doctolib, Doctena, arzt-direkt or CGM. Confirm it here as usual; we still cannot see other appointments that exist only in that vendor’s product.',
+		body: 'At least one upcoming visit is at a practice that lists Doctolib, Doctena, arzt-direkt or CGM. Confirm it here as usual; we still cannot see other appointments that exist only in that vendor’s product.',
 		href: '/doctor/schedule',
 		hrefLabel: 'Open schedule',
 		externalLinked: true

@@ -59,10 +59,32 @@ describe('interest', () => {
 		});
 		const demand = aggregateDemand([a, b]);
 		expect(demand[0]).toMatchObject({
+			symptomId: 'any',
 			specialty: 'Dermatology',
 			language: 'Arabic',
 			location: 'Greifswald',
 			count: 2
 		});
+	});
+
+	it('aggregates demand by symptom id when set', () => {
+		const a = buildInterest({
+			email: 'a@b.com',
+			symptomId: 'skin',
+			requirements: {
+				language: 'AR',
+				specialty: 'Dermatology',
+				insurance: 'GKV',
+				location: 'Greifswald',
+				newPatient: true,
+				preferredWindow: '',
+				modality: 'either',
+				postcode: '',
+				krankenkasse: '',
+				city: ''
+			}
+		});
+		const demand = aggregateDemand([a]);
+		expect(demand[0]).toMatchObject({ symptomId: 'skin', count: 1 });
 	});
 });

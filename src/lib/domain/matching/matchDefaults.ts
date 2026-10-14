@@ -1,3 +1,4 @@
+import type { AssignedDoctor } from './assignedDoctors';
 import {
 	practiceProfileDefaults,
 	type Practice
@@ -5,6 +6,7 @@ import {
 
 export { practiceProfileDefaults };
 export type { Practice };
+export type { AssignedDoctor } from './assignedDoctors';
 
 /** GKV / PKV / Selbstzahler. Legacy `private` still accepted when reading stored data. */
 export type InsuranceType = 'GKV' | 'PKV' | 'self_pay' | 'private' | '';
@@ -17,11 +19,14 @@ export type PatientRequirements = {
 	insurance: InsuranceType;
 	location: string;
 	newPatient: boolean | null;
+	/** Comma-separated time band ids: morning, lunch, evening, any. */
 	preferredWindow: string;
 	modality: 'in_person' | 'video' | 'either';
 	postcode: string;
 	krankenkasse: string;
 	city: string;
+	/** Saved doctor per specialty after a successful book. */
+	assignedDoctors: AssignedDoctor[];
 };
 
 export const patientRequirementsDefaults: PatientRequirements = {
@@ -30,11 +35,12 @@ export const patientRequirementsDefaults: PatientRequirements = {
 	insurance: '',
 	location: '',
 	newPatient: null,
-	preferredWindow: '',
+	preferredWindow: 'any',
 	modality: 'either',
 	postcode: '',
 	krankenkasse: '',
-	city: ''
+	city: '',
+	assignedDoctors: []
 };
 
 /** Local demo patient — complete enough to match seeded Greifswald practices. */
@@ -44,11 +50,12 @@ export const demoPatientRequirements: PatientRequirements = {
 	insurance: 'GKV',
 	location: 'Greifswald',
 	newPatient: true,
-	preferredWindow: '',
+	preferredWindow: 'any',
 	modality: 'video',
 	postcode: '17489',
 	krankenkasse: 'TK',
-	city: 'Greifswald'
+	city: 'Greifswald',
+	assignedDoctors: []
 };
 
 /** Required for patient to reach /patient/match */

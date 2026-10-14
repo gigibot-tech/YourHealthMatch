@@ -87,9 +87,9 @@ export const factsService = {
 				id: 'doctor-live-waitlist',
 				audience: 'doctor',
 				title: 'New-patient interest on this device',
-				body: `${top.count} waitlist request${top.count === 1 ? '' : 's'} for ${top.specialty} (${top.language}) in ${top.location}. Local interest only — not a national statistic and not sent to 116117.`,
-				href: '/doctor/practice',
-				hrefLabel: 'Update practice profile',
+				body: `${top.count} waitlist request${top.count === 1 ? '' : 's'} for ${top.symptomId !== 'any' ? top.symptomId : top.specialty} (${top.language}) in ${top.location}. Local interest only — not a national statistic and not sent to 116117.`,
+				href: '/doctor/practice#languages',
+				hrefLabel: 'Edit practice',
 				when: 'always'
 			});
 		}

@@ -6,10 +6,12 @@
 	let {
 		practiceId,
 		doctorId = '',
+		symptomId = '',
 		compact = false
 	}: {
 		practiceId: string;
 		doctorId?: string;
+		symptomId?: string;
 		compact?: boolean;
 	} = $props();
 
@@ -28,6 +30,7 @@
 				email,
 				practiceId,
 				doctorId: doctorId || undefined,
+				symptomId: symptomId || undefined,
 				note,
 				requirements: $requirements
 			});
