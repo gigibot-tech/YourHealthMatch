@@ -16,8 +16,9 @@
 		YourHealthMatch
 	</a>
 	<nav class="site-nav" aria-label="Page">
+		<a href="/#join">{copy.send}</a>
 		<a href="/#how">{copy.navHow}</a>
-		<a href="/#clinics">{copy.navClinics}</a>
+		<a href="/#demo">{copy.navClinics}</a>
 		<a href="/about">{copy.navAbout}</a>
 		<div class="site-lang" role="group" aria-label={copy.langLabel}>
 			<button type="button" class:on={lang === 'DE'} onclick={() => setLang('DE')}>Deutsch</button>

@@ -13,7 +13,7 @@
 		</div>
 		<nav aria-label="Footer">
 			<a href="/about">{copy.footerAbout}</a>
-			<a href="/#contact">{copy.footerContact}</a>
+			<a href="/#join">{copy.footerContact}</a>
 			<a href="/privacy">{copy.footerPrivacy}</a>
 			<a href="/legal">{copy.footerLegal}</a>
 			<a href="mailto:contact@yourhealthmatch.com">contact@yourhealthmatch.com</a>

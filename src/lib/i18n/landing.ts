@@ -3,7 +3,7 @@ export type LandingLang = 'EN' | 'DE';
 export const LANDING = {
 	EN: {
 		navHow: 'How it works',
-		navClinics: 'For doctors',
+		navClinics: 'Demo',
 		navAbout: 'About',
 		navContact: 'Contact',
 		navCta: 'Find a doctor',
@@ -100,11 +100,16 @@ export const LANDING = {
 				body: 'German, English, Turkish, Arabic, Ukrainian, and Russian.'
 			}
 		],
-		clinicsKicker: 'For clinics',
-		clinicsTitle: 'Open the times you can actually offer.',
-		clinicsBody:
-			'Set up the practice, then publish slots. Patients only see a time you have opened.',
-		clinicsCta: 'Start as a clinic',
+		demoKicker: 'Demo',
+		demoTitle: 'Try it as a patient, or as a clinic.',
+		demoIntro:
+			'You do not need an account. Start from the beginning, or skip setup and open the Greifswald clinic.',
+		patientTitle: 'I am looking for a doctor.',
+		patientBody: 'Tell us your language and your insurance, and we match you with a practice.',
+		patientCta: 'Start as a patient',
+		clinicTitle: 'I am a doctor, or I have a clinic.',
+		clinicBody: 'Set up the practice, then open the schedule and the available times.',
+		clinicCta: 'Start as a clinic',
 		skip: 'Skip setup',
 		finalKicker: 'Get started',
 		finalTitle: 'Find a suitable doctor.',
@@ -150,7 +155,7 @@ export const LANDING = {
 	},
 	DE: {
 		navHow: 'So funktioniert es',
-		navClinics: 'Für Ärztinnen und Ärzte',
+		navClinics: 'Demo',
 		navAbout: 'Über uns',
 		navContact: 'Kontakt',
 		navCta: 'Ärztin oder Arzt finden',
@@ -250,11 +255,17 @@ export const LANDING = {
 				body: 'Deutsch, Englisch, Türkisch, Arabisch, Ukrainisch und Russisch.'
 			}
 		],
-		clinicsKicker: 'Für Praxen',
-		clinicsTitle: 'Öffnen Sie die Zeiten, die Sie wirklich anbieten können.',
-		clinicsBody:
-			'Richten Sie die Praxis ein und veröffentlichen Sie Termine. Patientinnen und Patienten sehen nur eine Zeit, die Sie geöffnet haben.',
-		clinicsCta: 'Als Praxis starten',
+		demoKicker: 'Demo',
+		demoTitle: 'Probieren Sie es als Patientin oder Patient, oder als Praxis.',
+		demoIntro:
+			'Sie brauchen kein Konto. Sie können von vorn anfangen, oder die Einrichtung überspringen und die Praxis in Greifswald öffnen.',
+		patientTitle: 'Ich suche eine Ärztin oder einen Arzt.',
+		patientBody:
+			'Ich nenne meine Sprache und meine Versicherung, und Sie finden eine passende Praxis.',
+		patientCta: 'Als Patientin oder Patient starten',
+		clinicTitle: 'Ich bin Ärztin oder Arzt, oder ich habe eine Praxis.',
+		clinicBody: 'Ich richte die Praxis ein und öffne danach den Kalender und die freien Zeiten.',
+		clinicCta: 'Als Praxis starten',
 		skip: 'Einrichtung überspringen',
 		finalKicker: 'Beginnen',
 		finalTitle: 'Finden Sie eine passende Ärztin oder einen passenden Arzt.',
