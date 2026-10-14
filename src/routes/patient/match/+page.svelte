@@ -132,19 +132,34 @@
 		)
 	);
 
-	let criteriaBits = $derived(
+	function insuranceLabel(code: string) {
+		if (code === 'GKV') return text('match.insuranceGkv');
+		if (code === 'PKV') return text('match.insurancePkv');
+		if (code === 'self_pay' || code === 'private') return text('match.insuranceSelfPay');
+		return code;
+	}
+
+	let promiseBits = $derived(
 		[
 			$requirements.language ? languageLabel($requirements.language) : '',
-			$requirements.insurance === 'self_pay' || $requirements.insurance === 'private'
-				? 'Selbstzahler'
-				: $requirements.insurance,
 			$requirements.location || $requirements.city,
-			$requirements.postcode,
-			$requirements.preferredWindow && $requirements.preferredWindow !== 'any'
-				? `Times: ${$requirements.preferredWindow}`
-				: ''
+			$requirements.insurance ? insuranceLabel($requirements.insurance) : ''
 		].filter(Boolean)
 	);
+
+	function promiseLinesFor(practiceId: string) {
+		const practice = practiceService.get(practiceId);
+		if (!practice) return promiseBits;
+		const langs = (practice.languages ?? [])
+			.map((code) => languageLabel(code))
+			.filter(Boolean)
+			.join(' · ');
+		return [
+			langs || ($requirements.language ? languageLabel($requirements.language) : ''),
+			practice.location || $requirements.location || $requirements.city,
+			$requirements.insurance ? insuranceLabel($requirements.insurance) : ''
+		].filter(Boolean);
+	}
 </script>
 
 <div class="page-header">
@@ -152,11 +167,14 @@
 	<p class="sub">{text('match.sub')}</p>
 </div>
 
-<div class="card match-criteria">
+<div class="card match-criteria match-promise-panel">
 	<div>
-		<h3 style="margin:0 0 0.25rem">{text('match.fromProfile')}</h3>
-		{#if criteriaBits.length}
-			<p class="detail" style="margin:0">{criteriaBits.join(' · ')}</p>
+		<h3 style="margin:0 0 0.35rem">{text('match.promiseTitle')}</h3>
+		{#if promiseBits.length}
+			{#each promiseBits as bit}
+				<p class="match-promise-line">{bit}</p>
+			{/each}
+			<p class="detail match-promise-caption">{text('match.promiseCaption')}</p>
 		{:else}
 			<p class="detail" style="margin:0">No match fields set yet.</p>
 		{/if}
@@ -238,6 +256,8 @@
 						location={$requirements.location}
 						symptomId={rec.id}
 						quiet={false}
+						promiseTitle={text('match.promiseTitle')}
+						promiseLines={promiseLinesFor(m.practiceId)}
 						assigned={Boolean(
 							rec.assigned &&
 								rec.assigned.practiceId === m.practiceId &&
@@ -279,3 +299,22 @@
 		</section>
 	{/each}
 {/if}
+
+<style>
+	.match-promise-panel {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.match-promise-line {
+		margin: 0.15rem 0;
+		color: #1c2433;
+		font-weight: 600;
+	}
+	.match-promise-caption {
+		margin: 0.65rem 0 0;
+		max-width: 48ch;
+		line-height: 1.45;
+	}
+</style>

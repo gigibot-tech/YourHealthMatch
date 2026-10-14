@@ -15,6 +15,8 @@
 		symptomId = '',
 		quiet = false,
 		assigned = false,
+		promiseTitle = '',
+		promiseLines = [],
 		onBook,
 		onLog
 	}: {
@@ -28,6 +30,8 @@
 		quiet?: boolean;
 		/** Saved Stamm doctor for this specialty. */
 		assigned?: boolean;
+		promiseTitle?: string;
+		promiseLines?: string[];
 		onBook: () => void;
 		onLog: () => void;
 	} = $props();
@@ -46,6 +50,14 @@
 		{#if opening}<p class="match-card__when">{opening}</p>{/if}
 	</header>
 	<p class="detail match-card__where">{practice?.name} · {practice?.location}</p>
+	{#if promiseTitle && promiseLines.length}
+		<div class="match-promise">
+			<p class="match-promise__title">{promiseTitle}</p>
+			{#each promiseLines as line}
+				<p>{line}</p>
+			{/each}
+		</div>
+	{/if}
 	{#if !quiet}
 		<ul class="match-facts">
 			{#each result.reasons as fact}
@@ -78,3 +90,21 @@
 		{symptomId}
 	/>
 </article>
+
+<style>
+	.match-promise {
+		margin: 0.75rem 0 0.35rem;
+		padding: 0.65rem 0 0.65rem 0.85rem;
+		border-left: 3px solid #203b73;
+		color: #3e4c63;
+		line-height: 1.45;
+	}
+	.match-promise__title {
+		margin: 0 0 0.35rem;
+		color: #203b73;
+		font-weight: 700;
+	}
+	.match-promise p {
+		margin: 0.15rem 0;
+	}
+</style>

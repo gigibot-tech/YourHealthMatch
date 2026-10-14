@@ -769,8 +769,8 @@
 
 .about-circles-stage {
   position: relative;
-  width: min(100%, 440px);
-  aspect-ratio: 400 / 340;
+  width: min(100%, 460px);
+  aspect-ratio: 400 / 360;
   margin: 0 auto;
   overflow: visible;
 }
@@ -782,42 +782,42 @@
   overflow: visible;
 }
 
+.about-circles-blend {
+  isolation: isolate;
+}
+
 .about-circle-disc {
-  fill: var(--circle-fill-soft);
-  fill-opacity: 0.82;
+  fill: var(--circle-fill);
+  fill-opacity: 0.42;
   stroke: var(--circle-stroke);
-  stroke-width: 2.25;
+  stroke-width: 1.75;
+  stroke-opacity: 0.55;
+  mix-blend-mode: multiply;
   transition:
-    fill 200ms ease,
     fill-opacity 200ms ease,
-    stroke 200ms ease;
+    stroke-opacity 200ms ease,
+    stroke-width 200ms ease;
 }
 
 .about-circle-disc-people {
-  --circle-fill-soft: color-mix(in srgb, var(--cobalt) 34%, white);
-  --circle-stroke: color-mix(in srgb, var(--cobalt) 72%, white);
-  --circle-fill-lit: color-mix(in srgb, var(--cobalt) 52%, white);
-  --circle-stroke-lit: var(--cobalt);
+  --circle-fill: #6b86c4;
+  --circle-stroke: var(--cobalt);
 }
 
 .about-circle-disc-access {
-  --circle-fill-soft: color-mix(in srgb, var(--sage) 70%, white);
-  --circle-stroke: color-mix(in srgb, #5f8f82 55%, var(--sage));
-  --circle-fill-lit: color-mix(in srgb, var(--sage) 92%, #5f8f82);
-  --circle-stroke-lit: #3f6d62;
+  --circle-fill: #7eb8a8;
+  --circle-stroke: #3f6d62;
 }
 
 .about-circle-disc-providers {
-  --circle-fill-soft: color-mix(in srgb, var(--coral) 42%, white);
-  --circle-stroke: color-mix(in srgb, var(--coral) 75%, white);
-  --circle-fill-lit: color-mix(in srgb, var(--coral) 62%, white);
-  --circle-stroke-lit: #d96a52;
+  --circle-fill: #f3a792;
+  --circle-stroke: #d96a52;
 }
 
 .about-circle-disc.is-lit {
-  fill: var(--circle-fill-lit);
-  fill-opacity: 0.92;
-  stroke: var(--circle-stroke-lit);
+  fill-opacity: 0.58;
+  stroke-opacity: 0.9;
+  stroke-width: 2.25;
 }
 
 .about-circle-label {
@@ -831,6 +831,7 @@
 
 .about-circles-center-bg {
   fill: #fffdf8;
+  fill-opacity: 0.94;
   stroke: color-mix(in srgb, var(--cobalt) 28%, white);
   stroke-width: 1;
 }

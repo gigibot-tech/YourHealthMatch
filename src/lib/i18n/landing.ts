@@ -13,7 +13,8 @@ export const LANDING = {
 		heroSub:
 			'YourHealthMatch helps international students, expats, and newcomers find a suitable doctor by language, location, and insurance.',
 		heroCta: 'Set up a demo profile',
-		heroDemoNote: 'This saves a demo profile in this browser. Matching a doctor comes later.',
+		heroDemoNote:
+			'This saves a demo profile in this browser, then shows doctors that fit your language, place, and insurance.',
 		heroClinic: 'I have a clinic',
 		visualTitle: 'What a match checks',
 		chips: ['Your language', 'Your location', 'Your insurance'],
@@ -226,7 +227,8 @@ export const LANDING = {
 		heroSub:
 			'YourHealthMatch hilft internationalen Studierenden, Expats und Zugezogenen, eine passende Ärztin oder einen passenden Arzt nach Sprache, Ort und Versicherung zu finden.',
 		heroCta: 'Demoprofil anlegen',
-		heroDemoNote: 'Das speichert ein Demoprofil in diesem Browser. Die Zuordnung zu einer Ärztin oder einem Arzt kommt später.',
+		heroDemoNote:
+			'Das speichert ein Demoprofil in diesem Browser und zeigt dann Praxen, die zu Sprache, Ort und Versicherung passen.',
 		heroClinic: 'Ich habe eine Praxis',
 		visualTitle: 'Was ein Treffer prüft',
 		chips: ['Ihre Sprache', 'Ihr Ort', 'Ihre Versicherung'],

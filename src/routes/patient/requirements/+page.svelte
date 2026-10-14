@@ -43,6 +43,8 @@
 		}
 	}
 
+	let savedNote = $state('');
+
 	function save(e: Event) {
 		e.preventDefault();
 		const language = normalizeLanguageCode(form.language) || form.language;
@@ -54,15 +56,19 @@
 		} as Partial<PatientRequirements>);
 		const missing = matchingService.isPatientReady(saved);
 		if (missing.length) {
+			savedNote = '';
 			alert(`Still needed: ${missing.join(', ')}`);
 			return;
 		}
+		savedNote = t(lang, 'profile.saved');
 		goto('/patient/match');
 	}
 </script>
 
 <div class="page-header">
+	<p class="demo-kicker">{t(lang, 'profile.demoTitle')}</p>
 	<h1>{t(lang, 'profile.title')}</h1>
+	<p class="demo-banner">{t(lang, 'profile.demoBody')}</p>
 	<p class="sub">{t(lang, 'profile.sub')}</p>
 </div>
 
@@ -122,7 +128,7 @@
 	</div>
 	<div class="field" id="time-bands">
 		<span class="field-label">When can you go?</span>
-		<p class="detail">Matching only offers clinic times in these bands.</p>
+		<p class="detail">{t(lang, 'profile.times')}</p>
 		{#each TIME_BANDS as band}
 			<label>
 				<input
@@ -146,11 +152,28 @@
 		<button class="btn btn-primary" type="submit">{t(lang, 'profile.save')}</button>
 		<SkipOnboardingButton role="patient" />
 	</div>
+	{#if savedNote}<p class="demo-banner">{savedNote}</p>{/if}
 </form>
 
 <SystemsPrefs />
 
 <style>
+	.demo-kicker {
+		margin: 0 0 0.35rem;
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #203b73;
+	}
+	.demo-banner {
+		margin: 0.75rem 0 0;
+		padding: 0.85rem 1rem;
+		border-radius: 12px;
+		background: #f5ebdd;
+		color: #1c2433;
+		max-width: 42rem;
+	}
 	.field-label {
 		display: block;
 		font-size: 0.85rem;

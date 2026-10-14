@@ -43,7 +43,7 @@
 			<p class="kicker">{copy.heroKicker}</p>
 			<h1>{copy.heroTitle}</h1>
 			<p class="lede">{copy.heroSub}</p>
-			<button class="site-cta" type="button" onclick={() => start('patient')}>{copy.heroCta}</button>
+			<p class="hero-demo-note">{copy.heroDemoNote}</p>
 		</div>
 		<figure class="hero-photo">
 			<img src="/images/hero-scene.png" alt="" />
@@ -55,7 +55,7 @@
 		</figure>
 	</section>
 
-	<section id="problem" class="band">
+	<section id="problem" class="band band-cream">
 		<div class="problem-row">
 			<div>
 				<p class="kicker">{copy.problemKicker}</p>
@@ -129,7 +129,7 @@
 		</div>
 	</section>
 
-	<section id="how" class="band band-sage">
+	<section id="how" class="band">
 		<p class="kicker">{copy.howKicker}</p>
 		<h2>{copy.howTitle}</h2>
 		<ol class="steps steps-row">

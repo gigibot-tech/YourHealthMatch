@@ -23,6 +23,6 @@ Motion stays small: hover on buttons and links, no parallax.
 
 ## Homepage
 
-The first screen is a cream page, a cobalt headline, one **Find a doctor** button, and the Cologne scene on the right with short labels. Later bands alternate cream, warm white, and sage. The footer is cobalt.
+The page ground is white. Beige (`#F5EBDD`) is one content band. Sage (`#B8D9CE`) is only the demo band. Cobalt is for headings and the **Find a doctor** button, not for large backgrounds. The footer is white.
 
 Photography should stay specific and natural. The current scene is the supplied hero, cropped so the headline is set in our type, not baked into the picture.
