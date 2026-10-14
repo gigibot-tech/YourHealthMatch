@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { startSession } from '$lib/application/services';
 	import { LANDING, type LandingLang } from '$lib/i18n/landing';
 	import { preferences } from '$lib/stores/app';
 
@@ -7,6 +9,10 @@
 
 	function setLang(next: LandingLang) {
 		preferences.set({ language: next });
+	}
+
+	function findDoctor() {
+		goto(startSession({ role: 'patient', skipOnboarding: false }));
 	}
 </script>
 
@@ -24,5 +30,6 @@
 			<button type="button" class:on={lang === 'DE'} onclick={() => setLang('DE')}>Deutsch</button>
 			<button type="button" class:on={lang === 'EN'} onclick={() => setLang('EN')}>English</button>
 		</div>
+		<button class="site-cta site-nav-cta" type="button" onclick={findDoctor}>{copy.heroCta}</button>
 	</nav>
 </header>

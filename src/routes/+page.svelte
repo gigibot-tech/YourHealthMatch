@@ -38,11 +38,21 @@
 <div class="landing" id="top" lang={lang === 'DE' ? 'de' : 'en'}>
 	<SiteHeader {lang} />
 
-	<section class="hero-banner" aria-label={copy.heroTitle}>
-		<img src="/images/hero-banner.png" alt={copy.heroTitle} />
-		<button class="site-cta hero-banner-cta" type="button" onclick={() => start('patient')}>
-			{copy.heroCta}
-		</button>
+	<section class="hero">
+		<div class="hero-copy">
+			<p class="kicker">{copy.heroKicker}</p>
+			<h1>{copy.heroTitle}</h1>
+			<p class="lede">{copy.heroSub}</p>
+			<button class="site-cta" type="button" onclick={() => start('patient')}>{copy.heroCta}</button>
+		</div>
+		<figure class="hero-photo">
+			<img src="/images/hero-scene.png" alt="" />
+			<ul class="chips">
+				{#each copy.chips as chip}
+					<li>{chip}</li>
+				{/each}
+			</ul>
+		</figure>
 	</section>
 
 	<section id="problem" class="band">
@@ -119,7 +129,7 @@
 		</div>
 	</section>
 
-	<section id="how" class="band">
+	<section id="how" class="band band-sage">
 		<p class="kicker">{copy.howKicker}</p>
 		<h2>{copy.howTitle}</h2>
 		<ol class="steps steps-row">
@@ -162,7 +172,7 @@
 		</div>
 	</section>
 
-	<section id="demo" class="band">
+	<section id="demo" class="band band-sage">
 		<p class="kicker">{copy.demoKicker}</p>
 		<h2>{copy.demoTitle}</h2>
 		<p class="lede">{copy.demoIntro}</p>
