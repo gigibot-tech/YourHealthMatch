@@ -2,23 +2,18 @@
 	import { goto } from '$app/navigation';
 	import { joinTestSeekerWaitlist, type WaitlistJoinResult } from '$lib/adapters/testSeekerWaitlist';
 	import { startSession, type SessionRole } from '$lib/application/services';
-	import { LANDING, type LandingLang } from '$lib/i18n/landing';
+	import SiteFooter from '$lib/components/marketing/SiteFooter.svelte';
+	import SiteHeader from '$lib/components/marketing/SiteHeader.svelte';
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
+	import { LANDING, type LandingLang } from '$lib/i18n/landing';
 	import { preferences } from '$lib/stores/app';
 
 	let email = $state('');
 	let who = $state<'test_patient' | 'clinic'>('test_patient');
 	let pending = $state(false);
 	let result = $state<WaitlistJoinResult | null>(null);
-	let lang = $state<LandingLang>($preferences.language === 'DE' ? 'DE' : 'EN');
-
+	let lang = $derived<LandingLang>($preferences.language === 'DE' ? 'DE' : 'EN');
 	const copy = $derived(LANDING[lang]);
-	const languages = ['Deutsch', 'English', 'Türkçe', 'العربية', 'Українська', 'Русский'];
-
-	function setLang(next: LandingLang) {
-		lang = next;
-		preferences.set({ language: next });
-	}
 
 	function start(nextRole: SessionRole) {
 		goto(startSession({ role: nextRole, skipOnboarding: false }));
@@ -41,79 +36,128 @@
 </script>
 
 <div class="landing" id="top" lang={lang === 'DE' ? 'de' : 'en'}>
-	<nav class="fs-nav" aria-label="Page">
-		<a class="fs-brand" href="#top">
-			<span class="landing-mark" aria-hidden="true"></span>
-			YourHealthMatch
-		</a>
-		<div class="fs-nav-links">
-			<div class="fs-lang" role="group" aria-label={lang === 'DE' ? 'Sprache' : 'Language'}>
-				<button type="button" class:on={lang === 'DE'} onclick={() => setLang('DE')}>DE</button>
-				<button type="button" class:on={lang === 'EN'} onclick={() => setLang('EN')}>EN</button>
+	<SiteHeader {lang} />
+
+	<section class="hero">
+		<div class="hero-copy">
+			<p class="kicker">{copy.heroKicker}</p>
+			<h1>{copy.heroTitle}</h1>
+			<div class="hero-actions">
+				<button class="site-cta" type="button" onclick={() => start('patient')}>{copy.heroCta}</button>
+				<a class="text-link" href="#clinics">{copy.heroClinic}</a>
 			</div>
-			<a href="#demo">{copy.navDemo}</a>
-			<a href="#pilot">{copy.navGermany}</a>
-			<a class="fs-nav-cta" href="#join">{copy.navCta}</a>
+			<p class="lede">{copy.heroSub}</p>
 		</div>
-	</nav>
-
-	<section class="fs-hero">
-		<p class="fs-kicker">{copy.kicker}</p>
-		<h1>
-			<span>Your</span>
-			<span>Health</span>
-			<span>Match</span>
-		</h1>
-		<p class="fs-tag">{copy.tagline}</p>
+		<aside class="hero-visual" aria-label={copy.visualTitle}>
+			<ul class="chips">
+				{#each copy.chips as chip}
+					<li>{chip}</li>
+				{/each}
+			</ul>
+			<article class="example-match">
+				<p>{copy.exampleLabel}</p>
+				<strong>{copy.exampleRole}</strong>
+				<span>{copy.exampleMeta}</span>
+			</article>
+		</aside>
 	</section>
 
-	<section id="pilot" class="fs-band">
-		<p class="fs-kicker">{copy.pilotKicker}</p>
-		<ul class="fs-langs" aria-label={lang === 'DE' ? 'Sprachen im Piloten' : 'Languages in the trial'}>
-			{#each languages as name}
-				<li>{name}</li>
+	<section id="problem" class="band">
+		<p class="kicker">{copy.problemKicker}</p>
+		<h2>{copy.problemTitle}</h2>
+		<p class="lede">{copy.problemIntro}</p>
+		<div class="cards cards-4">
+			{#each copy.problems as item}
+				<article>
+					<h3>{item.title}</h3>
+					<p>{item.body}</p>
+				</article>
 			{/each}
-		</ul>
-		<ul class="fs-points">
-			{#each copy.pilotPoints as point}
-				<li>{point}</li>
-			{/each}
-		</ul>
-	</section>
-
-	<section id="demo" class="fs-band fs-demo">
-		<p class="fs-kicker">{copy.demoKicker}</p>
-		<h2>{copy.demoTitle}</h2>
-		<ul class="fs-points">
-			{#each copy.demoPoints as point}
-				<li>{point}</li>
-			{/each}
-		</ul>
-		<div class="fs-paths">
-			<article>
-				<strong>{copy.patientTitle}</strong>
-				<span>{copy.patientBody}</span>
-				<div class="actions">
-					<button class="fs-outline" type="button" onclick={() => start('patient')}>{copy.patientCta}</button>
-					<SkipOnboardingButton role="patient" compact label={copy.skip} />
-				</div>
-			</article>
-			<article>
-				<strong>{copy.clinicTitle}</strong>
-				<span>{copy.clinicBody}</span>
-				<div class="actions">
-					<button class="fs-outline" type="button" onclick={() => start('doctor')}>{copy.clinicCta}</button>
-					<SkipOnboardingButton role="doctor" compact label={copy.skip} />
-				</div>
-			</article>
 		</div>
 	</section>
 
-	<section id="join" class="fs-band fs-join">
-		<p class="fs-kicker">{copy.joinKicker}</p>
-		<h2>{copy.joinTitle}</h2>
+	<section id="solution" class="band band-tint">
+		<div class="split">
+			<div>
+				<p class="kicker">{copy.solutionKicker}</p>
+				<h2>{copy.solutionTitle}</h2>
+				<p class="lede">{copy.solutionIntro}</p>
+			</div>
+			<div class="match-board" aria-label={copy.visualTitle}>
+				{#each copy.solutions as item}
+					<p><strong>{item.title}.</strong> {item.body}</p>
+				{/each}
+				<article class="example-match">
+					<p>{copy.exampleLabel}</p>
+					<strong>{copy.exampleRole}</strong>
+					<span>{copy.exampleMeta}</span>
+				</article>
+			</div>
+		</div>
+	</section>
+
+	<section id="how" class="band">
+		<p class="kicker">{copy.howKicker}</p>
+		<h2>{copy.howTitle}</h2>
+		<ol class="steps steps-row">
+			{#each copy.steps as step, i}
+				<li>
+					<span>{i + 1}</span>
+					<div>
+						<h3>{step.title}</h3>
+						<p>{step.body}</p>
+					</div>
+				</li>
+			{/each}
+		</ol>
+	</section>
+
+	<section id="benefits" class="band">
+		<p class="kicker">{copy.benefitsKicker}</p>
+		<h2>{copy.benefitsTitle}</h2>
+		<div class="cards cards-4">
+			{#each copy.benefits as item}
+				<article>
+					<h3>{item.title}</h3>
+					<p>{item.body}</p>
+				</article>
+			{/each}
+		</div>
+	</section>
+
+	<section id="trust" class="band band-tint">
+		<p class="kicker">{copy.trustKicker}</p>
+		<h2>{copy.trustTitle}</h2>
+		<p class="lede">{copy.trustIntro}</p>
+		<div class="cards cards-3">
+			{#each copy.trust as item}
+				<article>
+					<h3>{item.title}</h3>
+					<p>{item.body}</p>
+				</article>
+			{/each}
+		</div>
+	</section>
+
+	<section id="clinics" class="band">
+		<p class="kicker">{copy.clinicsKicker}</p>
+		<h2>{copy.clinicsTitle}</h2>
+		<p class="lede">{copy.clinicsBody}</p>
+		<div class="hero-actions">
+			<button class="site-cta" type="button" onclick={() => start('doctor')}>{copy.clinicsCta}</button>
+			<SkipOnboardingButton role="doctor" compact label={copy.skip} />
+		</div>
+	</section>
+
+	<section id="contact" class="final-wrap">
+		<div class="band final">
+		<div>
+			<p class="kicker">{copy.finalKicker}</p>
+			<h2>{copy.finalTitle}</h2>
+			<p class="lede">{copy.finalSub}</p>
+		</div>
 		<form onsubmit={join}>
-			<fieldset class="fs-who">
+			<fieldset>
 				<legend>{copy.joinLegend}</legend>
 				<label>
 					<input type="radio" name="who" value="test_patient" bind:group={who} />
@@ -135,10 +179,10 @@
 				placeholder={copy.email}
 				bind:value={email}
 			/>
-			<button class="fs-outline" type="submit" disabled={pending}>
+			<button class="site-cta" type="submit" disabled={pending}>
 				{pending ? copy.saving : copy.send}
 			</button>
-			<p class="fs-status" aria-live="polite">
+			<p class="form-status" aria-live="polite">
 				{#if result === 'joined'}{copy.joined}{/if}
 				{#if result === 'already'}{copy.already}{/if}
 				{#if result === 'invalid'}{copy.invalid}{/if}
@@ -146,5 +190,8 @@
 				{#if result === 'failed'}{copy.failed}{/if}
 			</p>
 		</form>
+		</div>
 	</section>
+
+	<SiteFooter {lang} />
 </div>

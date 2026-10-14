@@ -33,7 +33,7 @@
 	);
 	let showShell = $derived.by(() => {
 		const path = $page.url.pathname;
-		if (path === '/') return false;
+		if (path === '/' || path === '/about' || path === '/privacy' || path === '/legal') return false;
 		return (
 			$role === 'patient' ||
 			$role === 'doctor' ||
