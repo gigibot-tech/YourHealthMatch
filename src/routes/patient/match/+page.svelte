@@ -7,7 +7,7 @@
 		factsService,
 		visitPipeline,
 		PATIENT_PROFILE_PATH,
-		DEMO_PATIENT_ID
+		activePatientId
 	} from '$lib/application/services';
 	import { bookingDraft, requirements, appointments, preferences } from '$lib/stores/app';
 	import { t, uiLanguage, type MessageKey } from '$lib/i18n';
@@ -122,12 +122,12 @@
 	let factCards = $derived.by(() => {
 		void $appointments;
 		void $requirements;
-		return factsService.forPatient(DEMO_PATIENT_ID);
+		return factsService.forPatient(activePatientId());
 	});
 	let hasUpcoming = $derived(
 		$appointments.some(
 			(a) =>
-				a.patientId === DEMO_PATIENT_ID &&
+				a.patientId === activePatientId() &&
 				(a.status === 'requested' || a.status === 'confirmed')
 		)
 	);

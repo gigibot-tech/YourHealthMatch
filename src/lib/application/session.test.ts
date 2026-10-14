@@ -73,6 +73,17 @@ describe('session start', () => {
 		expect(applyDemoPatientData()).toMatchObject(demoPatientRequirements);
 	});
 
+	it('keeps a separate stored profile for each new patient session', () => {
+		startSession({ role: 'patient', skipOnboarding: false });
+		patientRepo.save({ language: 'EN', location: 'Berlin' });
+		const first = patientRepo.activeId();
+		startSession({ role: 'patient', skipOnboarding: false });
+		const second = patientRepo.activeId();
+		expect(second).not.toBe(first);
+		expect(patientRepo.get().location).toBe('');
+		expect(patientRepo.getProfile(first)?.location).toBe('Berlin');
+	});
+
 	it('sends a new doctor to practice setup, or dashboard when skipping', () => {
 		expect(canSkipOnboarding('doctor')).toBe(true);
 		expect(startSession({ role: 'doctor', skipOnboarding: false })).toBe(DOCTOR_PROFILE_PATH);

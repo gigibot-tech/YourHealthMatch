@@ -25,9 +25,9 @@ export const LANDING = {
 			{ label: 'An open time', detail: 'A slot the clinic published' }
 		],
 		problemKicker: 'The problem',
-		problemTitle: 'Finding a doctor in Germany can be difficult.',
+		problemTitle: 'Healthcare navigation in Germany does not guarantee the right next step.',
 		problemIntro:
-			'A new healthcare system, a new language, and an insurance question can sit in the way of a first visit.',
+			'Specialist care is hard to reach even for people who grew up here. Internationals face that same search, and more: a new system, new insurance rules, and a desk that may not speak their language. Native speakers can still navigate the landscape because it is in their language. Newcomers often cannot, so the right time is harder to find.',
 		problems: [
 			{
 				title: 'Language barriers',
@@ -39,7 +39,7 @@ export const LANDING = {
 			},
 			{
 				title: 'Few trusted recommendations',
-				body: 'Friends and forums are a start. They are not a practice with an open time.'
+				body: 'Friends and forums are a start. They are not a practice with the right time.'
 			},
 			{
 				title: 'Insurance questions',
@@ -69,15 +69,15 @@ export const LANDING = {
 		steps: [
 			{
 				title: 'Search and filter',
-				body: 'Language, place, and insurance. A short note can point to a checkup, eyes, or skin.'
+				body: 'Tell us your language, where you are, and your insurance.'
 			},
 			{
 				title: 'Compare and choose',
-				body: 'Each result says why that practice fits. There is no hidden score.'
+				body: 'Each result says why that practice fits. There is no hidden score. If the doctor is on another booking platform, we take you there.'
 			},
 			{
 				title: 'Book a visit',
-				body: 'Take a time the clinic has opened, or open the practice’s own booking link.'
+				body: 'Take a time the clinic has opened here, or continue on the practice’s own platform when that is where the doctor is listed.'
 			}
 		],
 		benefitsKicker: 'Why YourHealthMatch',
@@ -86,7 +86,7 @@ export const LANDING = {
 			{ title: 'Your language first', body: 'German is not required to start.' },
 			{ title: 'Reasons, not a score', body: 'Each card says why that doctor is shown.' },
 			{ title: 'Real openings', body: 'Times come from the clinic diary, not a scraped list.' },
-			{ title: 'A doctor you can return to', body: 'After you book, that doctor stays with the specialty.' }
+			{ title: 'A doctor you can hopefully return to', body: 'After you book, that doctor stays with the specialty.' }
 		],
 		trustKicker: 'Trust',
 		trustTitle: 'What is true today.',
@@ -94,7 +94,10 @@ export const LANDING = {
 			'We do not show partner or university marks until an agreement exists. The pilot stands on these facts.',
 		trust: [
 			{ title: 'Germany first', body: 'This is the first country in the pilot.' },
-			{ title: 'Greifswald demo', body: 'You can try a clinic without creating an account.' },
+			{
+				title: 'Greifswald demo',
+				body: 'In Mecklenburg-Vorpommern. You can try a clinic without creating an account.'
+			},
 			{
 				title: 'Six languages',
 				body: 'German, English, Turkish, Arabic, Ukrainian, and Russian.'
@@ -177,9 +180,10 @@ export const LANDING = {
 			{ label: 'Eine freie Zeit', detail: 'Ein Termin, den die Praxis geöffnet hat' }
 		],
 		problemKicker: 'Das Problem',
-		problemTitle: 'Eine Ärztin oder einen Arzt in Deutschland zu finden kann schwer sein.',
+		problemTitle:
+			'Die Navigation im deutschen Gesundheitswesen garantiert nicht den richtigen nächsten Schritt.',
 		problemIntro:
-			'Ein neues Gesundheitssystem, eine neue Sprache und eine Frage zur Versicherung stehen oft vor dem ersten Besuch.',
+			'Einen Facharzt zu erreichen ist auch für Menschen schwer, die hier aufgewachsen sind. Internationale haben dieselbe Suche, und mehr: ein neues System, neue Versicherungsregeln und einen Tresen, der ihre Sprache vielleicht nicht spricht. Muttersprachler können sich orientieren, weil die Landschaft in ihrer Sprache ist. Zugezogene oft nicht, deshalb ist der richtige Zeitpunkt schwerer zu finden.',
 		problems: [
 			{
 				title: 'Sprachbarrieren',
@@ -191,7 +195,7 @@ export const LANDING = {
 			},
 			{
 				title: 'Wenige verlässliche Empfehlungen',
-				body: 'Freunde und Foren sind ein Anfang. Sie sind keine Praxis mit einem freien Termin.'
+				body: 'Freunde und Foren sind ein Anfang. Sie sind keine Praxis mit dem richtigen Zeitpunkt.'
 			},
 			{
 				title: 'Fragen zur Versicherung',
@@ -221,15 +225,15 @@ export const LANDING = {
 		steps: [
 			{
 				title: 'Suchen und filtern',
-				body: 'Sprache, Ort und Versicherung. Eine kurze Notiz kann auf Vorsorge, Augen oder Haut zeigen.'
+				body: 'Nennen Sie Ihre Sprache, Ihren Ort und Ihre Versicherung.'
 			},
 			{
 				title: 'Vergleichen und wählen',
-				body: 'Jedes Ergebnis sagt, warum die Praxis passt. Es gibt keine versteckte Punktzahl.'
+				body: 'Jedes Ergebnis sagt, warum die Praxis passt. Es gibt keine versteckte Punktzahl. Wenn die Ärztin oder der Arzt auf einer anderen Buchungsplattform ist, führen wir Sie dorthin.'
 			},
 			{
 				title: 'Einen Besuch buchen',
-				body: 'Nehmen Sie eine Zeit, die die Praxis geöffnet hat, oder öffnen Sie ihren eigenen Buchungslink.'
+				body: 'Nehmen Sie eine Zeit, die die Praxis hier geöffnet hat, oder gehen Sie auf die eigene Plattform der Praxis, wenn die Person dort geführt wird.'
 			}
 		],
 		benefitsKicker: 'Warum YourHealthMatch',
@@ -239,7 +243,7 @@ export const LANDING = {
 			{ title: 'Gründe, keine Punktzahl', body: 'Jede Karte sagt, warum diese Person gezeigt wird.' },
 			{ title: 'Echte Termine', body: 'Zeiten kommen aus dem Praxiskalender, nicht aus einer kopierten Liste.' },
 			{
-				title: 'Eine Ärztin oder ein Arzt zum Wiederkommen',
+				title: 'Eine Ärztin oder ein Arzt, zu der oder dem Sie hoffentlich zurückkehren',
 				body: 'Nach der Buchung bleibt diese Person bei dem Fachgebiet.'
 			}
 		],
@@ -249,7 +253,10 @@ export const LANDING = {
 			'Wir zeigen keine Partner- oder Hochschulzeichen, bevor eine Vereinbarung besteht. Der Pilot steht auf diesen Angaben.',
 		trust: [
 			{ title: 'Zuerst Deutschland', body: 'Das ist das erste Land in diesem Piloten.' },
-			{ title: 'Demo in Greifswald', body: 'Sie können eine Praxis ohne Konto ausprobieren.' },
+			{
+				title: 'Demo in Greifswald',
+				body: 'In Mecklenburg-Vorpommern. Sie können eine Praxis ohne Konto ausprobieren.'
+			},
 			{
 				title: 'Sechs Sprachen',
 				body: 'Deutsch, Englisch, Türkisch, Arabisch, Ukrainisch und Russisch.'

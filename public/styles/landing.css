@@ -110,19 +110,66 @@
   cursor: not-allowed;
 }
 
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 0;
-  align-items: stretch;
+.hero-banner {
+  position: relative;
   width: min(1120px, calc(100% - 2rem));
   margin: 1rem auto 2.5rem;
+}
+
+.hero-banner img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 24px;
+}
+
+.hero-banner-cta {
+  position: absolute;
+  left: 4.2%;
+  bottom: 21%;
+  width: 19%;
+  height: 13%;
+  min-height: 2.4rem;
   padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
+}
+
+.hero-banner-cta:hover,
+.hero-banner-cta:focus-visible {
+  background: rgba(15, 76, 129, 0.12);
+  color: transparent;
+}
+
+.join-form {
+  max-width: none;
+  margin-top: 0;
   background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 18px 40px rgba(15, 76, 129, 0.06);
+}
+
+.band .join-form h2 {
+  font-size: 1.45rem;
+  max-width: none;
+  margin-bottom: 0.35rem;
+}
+
+.join-form .lede {
+  margin-top: 0;
+  margin-bottom: 0.35rem;
+  font-size: 0.98rem;
+}
+
+.problem-row {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.problem-row > div h2 {
+  max-width: 22ch;
 }
 
 .hero-copy {
@@ -661,6 +708,7 @@
   .split,
   .steps-row,
   .demo-grid,
+  .problem-row,
   .site-footer-inner {
     grid-template-columns: 1fr;
   }

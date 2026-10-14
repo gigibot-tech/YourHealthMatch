@@ -76,7 +76,7 @@ export const visitPipeline = {
 		};
 	},
 
-	withSlot(draft: VisitDraft, slot: Slot, holderId = 'pat_demo'): BookingDraft {
+	withSlot(draft: VisitDraft, slot: Slot, holderId = patientRepo.activeId()): BookingDraft {
 		if (!draft.practiceId || !draft.doctorId || !draft.requirements) {
 			throw new Error('Pick a match before choosing a slot');
 		}
@@ -100,7 +100,7 @@ export const visitPipeline = {
 
 	book(
 		draft: BookingDraft,
-		patientId = 'pat_demo',
+		patientId = patientRepo.activeId(),
 		patientName = 'Patient'
 	): Appointment {
 		const appt = appointmentService.book(draft, patientId, patientName);

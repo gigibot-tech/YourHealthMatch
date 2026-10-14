@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {
 		appointmentService,
-		DEMO_PATIENT_ID,
+		activePatientId,
 		factsService,
 		notificationService,
 		practiceService
@@ -34,12 +34,12 @@
 	import type { ActionId } from '$lib/domain/appointment/lifecycleEngine';
 
 	let lang = $derived(uiLanguage($preferences.language));
-	const PATIENT_ID = DEMO_PATIENT_ID;
+	const patientId = activePatientId();
 	const today = toISODate(new Date());
 
 	let mine = $derived(
 		$appointments
-			.filter((a) => a.patientId === PATIENT_ID)
+			.filter((a) => a.patientId === patientId)
 			.map((a) => appointmentService.view(a, 'patient'))
 	);
 	let upcoming = $derived(
@@ -54,14 +54,14 @@
 	let factCards = $derived.by(() => {
 		void $appointments;
 		void $requirements;
-		return factsService.forPatient(PATIENT_ID);
+		return factsService.forPatient(patientId);
 	});
 	let factHeading = $derived('Before you book');
 	let inbox = $derived(
 		$patientNotifications
 			.filter(
 				(n) =>
-					n.patientId === PATIENT_ID &&
+					n.patientId === patientId &&
 					(n.type === 'visit_completed' || n.type === 'visit_cancelled')
 			)
 			.map((n) => {

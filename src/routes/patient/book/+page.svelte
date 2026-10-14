@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { practiceService, visitPipeline, DEMO_PATIENT_ID } from '$lib/application/services';
+	import { practiceService, visitPipeline, activePatientId } from '$lib/application/services';
 	import { availability, bookingDraft, requirements } from '$lib/stores/app';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 	import MonthCalendar from '$lib/components/scheduling/MonthCalendar.svelte';
@@ -25,7 +25,7 @@
 			fromDate: selectedDate,
 			days: 1,
 			preferredWindow: $requirements.preferredWindow,
-			holderId: DEMO_PATIENT_ID
+			holderId: activePatientId()
 		});
 	});
 
@@ -41,7 +41,7 @@
 				doctorId: d.doctorId,
 				date: d.slot.date,
 				time: d.slot.time,
-				holderId: DEMO_PATIENT_ID
+				holderId: activePatientId()
 			});
 		}
 	}
@@ -59,7 +59,7 @@
 			const next = visitPipeline.withSlot(
 				$bookingDraft,
 				{ date: selectedDate, time: selectedTime },
-				DEMO_PATIENT_ID
+				activePatientId()
 			);
 			bookingDraft.set(next);
 			holdNotice = 'Time held for 5 minutes while you confirm.';

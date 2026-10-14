@@ -242,36 +242,149 @@ export const appointmentRepo = createLocalRepo<Appointment>('yhm_appointments_v1
 	reseedIfEmpty: true
 });
 export const interestRepo = createLocalRepo<Interest>('yhm_interest_v1', () => []);
-const PATIENT_KEY = 'yhm_patient_reqs_v1';
-const patientListeners = new Set<(r: PatientRequirements) => void>();
-let memoryPatient: PatientRequirements | null = null;
+const PROFILES_KEY = 'yhm_patient_profiles_v1';
+const LEGACY_PATIENT_KEY = 'yhm_patient_reqs_v1';
 
-export const patientRepo = {
-	get(): PatientRequirements {
+type PatientProfileStore = {
+	activeId: string;
+	profiles: Record<string, PatientRequirements>;
+};
+
+const patientListeners = new Set<(r: PatientRequirements) => void>();
+let memoryProfiles: PatientProfileStore | null = null;
+
+export function createProfileId(): string {
+	const id = globalThis.crypto?.randomUUID?.();
+	return `pat_${id ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`}`;
+}
+
+function emptyStore(activeId = createProfileId()): PatientProfileStore {
+	return {
+		activeId,
+		profiles: { [activeId]: { ...patientRequirementsDefaults } }
+	};
+}
+
+function readRaw(key: string): string | null {
+	try {
+		if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+			return localStorage.getItem(key);
+		}
+	} catch {
+		/* ignore */
+	}
+	return null;
+}
+
+function writeRaw(key: string, value: string) {
+	try {
+		if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
+			localStorage.setItem(key, value);
+		}
+	} catch {
+		/* ignore */
+	}
+}
+
+function normalizeStore(raw: unknown): PatientProfileStore | null {
+	if (!raw || typeof raw !== 'object') return null;
+	const record = raw as Partial<PatientProfileStore>;
+	if (!record.activeId || !record.profiles || typeof record.profiles !== 'object') return null;
+	const profiles: Record<string, PatientRequirements> = {};
+	for (const [id, profile] of Object.entries(record.profiles)) {
+		profiles[id] = safeMerge(patientRequirementsDefaults, profile);
+	}
+	if (!profiles[record.activeId]) {
+		profiles[record.activeId] = { ...patientRequirementsDefaults };
+	}
+	return { activeId: record.activeId, profiles };
+}
+
+function loadProfiles(): PatientProfileStore {
+	if (memoryProfiles) return memoryProfiles;
+	const parsed = readRaw(PROFILES_KEY);
+	if (parsed) {
 		try {
-			if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
-				const raw = localStorage.getItem(PATIENT_KEY);
-				if (!raw) return memoryPatient ?? { ...patientRequirementsDefaults };
-				return safeMerge(patientRequirementsDefaults, JSON.parse(raw));
+			const store = normalizeStore(JSON.parse(parsed));
+			if (store) {
+				memoryProfiles = store;
+				return store;
 			}
 		} catch {
 			/* fall through */
 		}
-		return memoryPatient ?? { ...patientRequirementsDefaults };
-	},
-	save(patch: Partial<PatientRequirements>): PatientRequirements {
-		const next = safeMerge(patientRequirementsDefaults, safeMerge(this.get(), patch));
-		memoryPatient = next;
+	}
+	const legacy = readRaw(LEGACY_PATIENT_KEY);
+	if (legacy) {
 		try {
-			if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
-				localStorage.setItem(PATIENT_KEY, JSON.stringify(next));
-			}
+			const activeId = createProfileId();
+			const store: PatientProfileStore = {
+				activeId,
+				profiles: {
+					[activeId]: safeMerge(patientRequirementsDefaults, JSON.parse(legacy))
+				}
+			};
+			memoryProfiles = store;
+			persistProfiles(store);
+			return store;
 		} catch {
-			/* ignore */
+			/* fall through */
 		}
-		patientListeners.forEach((fn) => fn(next));
-		return next;
+	}
+	memoryProfiles = emptyStore();
+	return memoryProfiles;
+}
+
+function persistProfiles(store: PatientProfileStore) {
+	memoryProfiles = store;
+	writeRaw(PROFILES_KEY, JSON.stringify(store));
+	const active = store.profiles[store.activeId] ?? { ...patientRequirementsDefaults };
+	patientListeners.forEach((fn) => fn(active));
+}
+
+export const patientRepo = {
+	activeId(): string {
+		return loadProfiles().activeId;
 	},
+
+	/** One stored profile per session id. Older sessions stay in the map. */
+	begin(id: string, initial: PatientRequirements): PatientRequirements {
+		const store = loadProfiles();
+		const next: PatientProfileStore = {
+			activeId: id,
+			profiles: {
+				...store.profiles,
+				[id]: safeMerge(patientRequirementsDefaults, initial)
+			}
+		};
+		persistProfiles(next);
+		return next.profiles[id];
+	},
+
+	getProfile(id: string): PatientRequirements | null {
+		const profile = loadProfiles().profiles[id];
+		return profile ? safeMerge(patientRequirementsDefaults, profile) : null;
+	},
+
+	get(): PatientRequirements {
+		const store = loadProfiles();
+		return safeMerge(
+			patientRequirementsDefaults,
+			store.profiles[store.activeId] ?? patientRequirementsDefaults
+		);
+	},
+
+	save(patch: Partial<PatientRequirements>): PatientRequirements {
+		const store = loadProfiles();
+		const current = store.profiles[store.activeId] ?? patientRequirementsDefaults;
+		const nextProfile = safeMerge(patientRequirementsDefaults, safeMerge(current, patch));
+		persistProfiles({
+			activeId: store.activeId,
+			profiles: { ...store.profiles, [store.activeId]: nextProfile }
+		});
+		return nextProfile;
+	},
+
 	subscribe(listener: (r: PatientRequirements) => void): () => void {
 		patientListeners.add(listener);
 		listener(this.get());

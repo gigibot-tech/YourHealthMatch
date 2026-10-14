@@ -38,61 +38,57 @@
 <div class="landing" id="top" lang={lang === 'DE' ? 'de' : 'en'}>
 	<SiteHeader {lang} />
 
-	<section class="hero" id="join">
-		<div class="hero-copy">
-			<p class="kicker">{copy.heroKicker}</p>
-			<h1>{copy.heroTitle}</h1>
-			<p class="lede">{copy.heroSub}</p>
-		<form class="hero-form" onsubmit={join}>
-			<fieldset>
-				<legend>{copy.joinLegend}</legend>
-				<label>
-					<input type="radio" name="who" value="test_patient" bind:group={who} />
-					{copy.interest}
-				</label>
-				<label>
-					<input type="radio" name="who" value="clinic" bind:group={who} />
-					{copy.clinic}
-				</label>
-			</fieldset>
-			<label for="waitlist-email">{copy.email}</label>
-			<input
-				id="waitlist-email"
-				name="email"
-				type="email"
-				autocomplete="email"
-				inputmode="email"
-				required
-				placeholder="you@email.com"
-				bind:value={email}
-			/>
-			<button class="site-cta" type="submit" disabled={pending}>
-				{pending ? copy.saving : copy.send}
-			</button>
-			<p class="form-status" aria-live="polite">
-				{#if result === 'joined'}{copy.joined}{/if}
-				{#if result === 'already'}{copy.already}{/if}
-				{#if result === 'invalid'}{copy.invalid}{/if}
-				{#if result === 'unavailable'}{copy.unavailable}{/if}
-				{#if result === 'failed'}{copy.failed}{/if}
-			</p>
-		</form>
-		</div>
-		<figure class="hero-photo">
-			<img src="/images/hero.jpg" alt="A student with a backpack on a European street" />
-			<ul class="chips">
-				{#each copy.chips as chip}
-					<li>{chip}</li>
-				{/each}
-			</ul>
-			<figcaption>Photo via Unsplash</figcaption>
-		</figure>
+	<section class="hero-banner" aria-label={copy.heroTitle}>
+		<img src="/images/hero-banner.png" alt={copy.heroTitle} />
+		<button class="site-cta hero-banner-cta" type="button" onclick={() => start('patient')}>
+			{copy.heroCta}
+		</button>
 	</section>
 
 	<section id="problem" class="band">
-		<p class="kicker">{copy.problemKicker}</p>
-		<h2>{copy.problemTitle}</h2>
-		<p class="lede">{copy.problemIntro}</p>
+		<div class="problem-row">
+			<div>
+				<p class="kicker">{copy.problemKicker}</p>
+				<h2>{copy.problemTitle}</h2>
+				<p class="lede">{copy.problemIntro}</p>
+			</div>
+			<form id="join" class="hero-form join-form" onsubmit={join}>
+				<h2>{copy.finalTitle}</h2>
+				<p class="lede">{copy.finalSub}</p>
+				<fieldset>
+					<legend>{copy.joinLegend}</legend>
+					<label>
+						<input type="radio" name="who" value="test_patient" bind:group={who} />
+						{copy.interest}
+					</label>
+					<label>
+						<input type="radio" name="who" value="clinic" bind:group={who} />
+						{copy.clinic}
+					</label>
+				</fieldset>
+				<label for="waitlist-email">{copy.email}</label>
+				<input
+					id="waitlist-email"
+					name="email"
+					type="email"
+					autocomplete="email"
+					inputmode="email"
+					required
+					placeholder="you@email.com"
+					bind:value={email}
+				/>
+				<button class="site-cta" type="submit" disabled={pending}>
+					{pending ? copy.saving : copy.send}
+				</button>
+				<p class="form-status" aria-live="polite">
+					{#if result === 'joined'}{copy.joined}{/if}
+					{#if result === 'already'}{copy.already}{/if}
+					{#if result === 'invalid'}{copy.invalid}{/if}
+					{#if result === 'unavailable'}{copy.unavailable}{/if}
+					{#if result === 'failed'}{copy.failed}{/if}
+				</p>
+			</form>
+		</div>
 		<div class="cards cards-4">
 			{#each copy.problems as item}
 				<article>

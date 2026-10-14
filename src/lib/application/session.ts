@@ -1,5 +1,7 @@
 import { demoPatientRequirements, type PatientRequirements } from '$lib/domain/matching/matchDefaults';
-import { preferences, role as roleStore, patchRequirements, resetRequirements } from '$lib/stores/app';
+import { patientRequirementsDefaults } from '$lib/domain/matching/matchDefaults';
+import { createProfileId, patientRepo } from '$lib/adapters/localRepos';
+import { preferences, role as roleStore } from '$lib/stores/app';
 import { matchingService } from './matchingService';
 import { practiceService } from './practiceService';
 
@@ -52,9 +54,14 @@ export function portalRedirectForRole(role: SessionRole | null, pathname: string
 	return null;
 }
 
+export function activePatientId(): string {
+	return patientRepo.activeId();
+}
+
 export function applyDemoPatientData(): PatientRequirements {
+	patientRepo.begin(DEMO_PATIENT_ID, demoPatientRequirements);
 	preferences.set({ language: demoPatientRequirements.language });
-	return patchRequirements(demoPatientRequirements);
+	return patientRepo.get();
 }
 
 /**
@@ -86,7 +93,7 @@ export function startSession(input: StartSessionInput): string {
 			applyDemoPatientData();
 			return '/patient/dashboard';
 		}
-		resetRequirements();
+		patientRepo.begin(createProfileId(), { ...patientRequirementsDefaults });
 		preferences.set({ language: '' });
 		return PATIENT_PROFILE_PATH;
 	}

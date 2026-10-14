@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { practiceService, visitPipeline, DEMO_PATIENT_ID } from '$lib/application/services';
+	import { practiceService, visitPipeline, activePatientId } from '$lib/application/services';
 	import { requirements } from '$lib/stores/app';
 	import { toISODate } from '$lib/domain/scheduling/slotCalendar';
 
@@ -37,7 +37,7 @@
 					...$requirements,
 					specialty: doctor.specialty || $requirements.specialty
 				},
-				patientId: DEMO_PATIENT_ID,
+				patientId: activePatientId(),
 				patientName: 'John Doe'
 			});
 			goto('/patient/dashboard');

@@ -43,7 +43,8 @@ export const appointmentService = {
 				practiceId: draft.practiceId,
 				doctorId,
 				fromDate: draft.slot.date,
-				days: 1
+				days: 1,
+				holderId: patientId
 			})
 			.some((offer) => offer.time === draft.slot.time);
 		if (!offered) throw new Error('This doctor has not opened that time');
