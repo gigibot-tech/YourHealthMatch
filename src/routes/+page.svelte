@@ -31,13 +31,17 @@
 	}
 </script>
 
-<div class="landing">
+<div class="landing" id="top">
 	<nav class="fs-nav" aria-label="Page">
-		<a href="#demo">Try the demo</a>
-		<a href="#join">Join</a>
-		<span class="fs-logo">YourHealthMatch</span>
-		<a href="#pilot">Germany</a>
-		<a href="#join">Waitlist</a>
+		<a class="fs-brand" href="#top">
+			<span class="landing-mark" aria-hidden="true"></span>
+			YourHealthMatch
+		</a>
+		<div class="fs-nav-links">
+			<a href="#demo">Try the demo</a>
+			<a href="#pilot">Germany</a>
+			<a class="fs-nav-cta" href="#join">Join the trial</a>
+		</div>
 	</nav>
 
 	<section class="fs-hero">
@@ -48,7 +52,6 @@
 			<span>Match</span>
 		</h1>
 		<p class="fs-tag">A doctor who already speaks your language.</p>
-		<a class="fs-outline" href="#join">Join the trial</a>
 	</section>
 
 	<section id="pilot" class="fs-band">
@@ -59,7 +62,7 @@
 			{/each}
 		</ul>
 		<p class="fs-line">
-			Germany is the first pilot country. Test patients looking for a doctor, and clinics or doctors,
+			Germany is the first pilot country. An interest in finding a doctor, and clinics or doctors,
 			join the same list.
 		</p>
 	</section>
@@ -96,7 +99,7 @@
 				<legend>Who is joining</legend>
 				<label>
 					<input type="radio" name="who" value="test_patient" bind:group={who} />
-					Test patient
+					Interest
 				</label>
 				<label>
 					<input type="radio" name="who" value="clinic" bind:group={who} />

@@ -1,9 +1,12 @@
 .landing {
-  --fs-green: #163326;
-  --fs-green-bar: #1c3d2e;
-  --fs-mark: #1f4a36;
-  --fs-cream: #f3ead7;
-  background: var(--fs-green);
+  --fs-green: #1a1d26;
+  --fs-green-bar: #ffffff;
+  --fs-mark: #d5e2fb;
+  --fs-cream: #1a1d26;
+  --fs-cobalt: #1e4fd6;
+  background:
+    radial-gradient(900px 420px at 100% -10%, rgba(30, 79, 214, 0.14), transparent 60%),
+    #f4efe6;
   color: var(--fs-cream);
   min-height: 100svh;
 }
@@ -13,29 +16,60 @@
   top: 0.75rem;
   z-index: 5;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 1.4rem;
-  width: min(920px, calc(100% - 2rem));
+  gap: 1rem;
+  width: min(980px, calc(100% - 2rem));
   margin: 0.75rem auto 0;
-  padding: 0.85rem 1.25rem;
+  padding: 0.7rem 0.85rem 0.7rem 1rem;
   border-radius: 18px;
-  background: var(--fs-green-bar);
+  background: #ffffff;
+  color: #1a1d26;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+.fs-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.landing-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: #1e4fd6;
+  box-shadow: 8px 8px 0 #c9b89a;
+  flex-shrink: 0;
+}
+
+.fs-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.fs-nav a:hover {
-  color: #fff;
+.fs-nav-links a:hover {
+  color: var(--fs-cobalt);
 }
 
-.fs-logo {
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  font-size: 0.95rem;
+.fs-nav-cta {
+  padding: 0.65rem 0.95rem;
+  border-radius: 8px;
+  background: var(--fs-cobalt);
+  color: #ffffff;
+}
+
+.fs-nav-cta:hover {
+  color: #ffffff;
+  background: #1639a8;
 }
 
 .fs-hero {
@@ -46,8 +80,7 @@
   justify-content: center;
   text-align: center;
   padding: 2rem 1rem 4rem;
-  background-image: radial-gradient(circle at 20% 30%, rgba(243, 234, 215, 0.05), transparent 28%),
-    radial-gradient(circle at 80% 70%, rgba(243, 234, 215, 0.04), transparent 24%);
+  background-image: none;
   overflow: hidden;
 }
 
@@ -56,7 +89,7 @@
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #d7c7a4;
+  color: #1639a8;
   margin-bottom: 0.6rem;
 }
 
@@ -68,7 +101,7 @@
   font-size: clamp(5.5rem, 18vw, 11rem);
   line-height: 0.82;
   letter-spacing: 0.02em;
-  color: var(--fs-mark);
+  color: #1e4fd6;
   margin: 0;
 }
 
@@ -77,7 +110,7 @@
   font-size: clamp(1rem, 2vw, 1.35rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--fs-cream);
+  color: #1a1d26;
 }
 
 .fs-outline {
@@ -86,10 +119,10 @@
   justify-content: center;
   margin-top: 1.4rem;
   padding: 0.75rem 1.4rem;
-  border: 1px solid var(--fs-cream);
+  border: 1px solid var(--fs-cobalt);
   border-radius: 4px;
   background: transparent;
-  color: var(--fs-cream);
+  color: var(--fs-cobalt);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
@@ -99,8 +132,8 @@
 }
 
 .fs-outline:hover {
-  background: var(--fs-cream);
-  color: var(--fs-green);
+  background: var(--fs-cobalt);
+  color: #ffffff;
 }
 
 .fs-outline:disabled {
@@ -120,13 +153,13 @@
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 0.9;
-  color: var(--fs-cream);
+  color: #1e4fd6;
   margin-bottom: 0.8rem;
 }
 
 .fs-line {
   max-width: 42ch;
-  color: #e4d8c2;
+  color: #3f4553;
   font-size: 1.05rem;
 }
 
@@ -139,7 +172,8 @@
 }
 
 .fs-langs li {
-  border: 1px solid rgba(243, 234, 215, 0.35);
+  border: 1px solid #d9d0c3;
+  background: rgba(255, 255, 255, 0.55);
   border-radius: 999px;
   padding: 0.3rem 0.75rem;
   letter-spacing: 0.08em;
@@ -155,7 +189,7 @@
 }
 
 .fs-paths article {
-  border-top: 1px solid rgba(243, 234, 215, 0.35);
+  border-top: 1px solid #d9d0c3;
   padding-top: 1rem;
 }
 
@@ -167,7 +201,7 @@
 
 .fs-paths span {
   display: block;
-  color: #d7c7a4;
+  color: #6b7280;
   margin-bottom: 1rem;
 }
 
@@ -180,8 +214,8 @@
 
 .fs-paths .btn {
   background: transparent;
-  color: var(--fs-cream);
-  border: 1px solid rgba(243, 234, 215, 0.45);
+  color: #1a1d26;
+  border: 1px solid #d9d0c3;
 }
 
 .fs-join form {
@@ -225,26 +259,30 @@
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--fs-cream);
+  border-bottom: 1px solid #1e4fd6;
   border-radius: 0;
-  color: var(--fs-cream);
+  color: #1a1d26;
   padding: 0.7rem 0;
   letter-spacing: 0.12em;
 }
 
 .fs-join input[type='email']::placeholder {
-  color: rgba(243, 234, 215, 0.55);
+  color: #6b7280;
 }
 
 .fs-status {
   min-height: 1.4em;
-  color: #d7c7a4;
+  color: #1639a8;
 }
 
 @media (max-width: 800px) {
-  .fs-nav {
+  .fs-nav,
+  .fs-nav-links {
     gap: 0.7rem;
     flex-wrap: wrap;
+  }
+
+  .fs-nav {
     border-radius: 14px;
   }
 
