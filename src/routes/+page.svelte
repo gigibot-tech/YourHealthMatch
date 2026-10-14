@@ -32,96 +32,98 @@
 </script>
 
 <div class="landing">
-	<section class="landing-hero">
-		<header class="landing-bar">
-			<span class="landing-mark" aria-hidden="true"></span>
-			<span>YourHealthMatch</span>
-		</header>
+	<nav class="fs-nav" aria-label="Page">
+		<a href="#demo">Try the demo</a>
+		<a href="#join">Join</a>
+		<span class="fs-logo">YourHealthMatch</span>
+		<a href="#pilot">Germany</a>
+		<a href="#join">Waitlist</a>
+	</nav>
 
-		<div class="landing-hero-grid">
-			<div>
-				<p class="landing-kicker">Germany</p>
-				<h1>A doctor who already speaks your language.</h1>
-				<p class="landing-lead">
-					Germany is the first pilot country. Join as a test patient looking for a doctor, or as a
-					clinic or doctor.
-				</p>
-				<ul class="landing-langs" aria-label="Languages in the trial">
-					{#each languages as name}
-						<li>{name}</li>
-					{/each}
-				</ul>
-			</div>
-
-			<form class="landing-card" onsubmit={join}>
-				<fieldset class="landing-who">
-					<legend>Who is joining</legend>
-					<label>
-						<input type="radio" name="who" value="test_patient" bind:group={who} />
-						Test patient
-					</label>
-					<label>
-						<input type="radio" name="who" value="clinic" bind:group={who} />
-						Clinic or doctor
-					</label>
-				</fieldset>
-				<label for="waitlist-email">Email</label>
-				<p>One address. Used only to invite you into the Germany pilot.</p>
-				<div class="landing-row">
-					<input
-						id="waitlist-email"
-						name="email"
-						type="email"
-						autocomplete="email"
-						inputmode="email"
-						required
-						placeholder="you@email.com"
-						bind:value={email}
-					/>
-					<button class="btn btn-primary" type="submit" disabled={pending}>
-						{pending ? 'Saving…' : 'Join the trial'}
-					</button>
-				</div>
-				<p class="landing-status" aria-live="polite">
-					{#if result === 'joined'}You’re on the list. We’ll write when the Germany pilot opens for you.{/if}
-					{#if result === 'already'}That email is already on the list for this role.{/if}
-					{#if result === 'invalid'}Enter a full email address.{/if}
-					{#if result === 'unavailable'}The waitlist is not connected yet.{/if}
-					{#if result === 'failed'}Could not save that email. Try again in a moment.{/if}
-				</p>
-			</form>
-		</div>
-
-		<a class="landing-cue" href="#demo">Try the demo</a>
+	<section class="fs-hero">
+		<p class="fs-kicker">Germany · first pilot</p>
+		<h1>
+			<span>Your</span>
+			<span>Health</span>
+			<span>Match</span>
+		</h1>
+		<p class="fs-tag">A doctor who already speaks your language.</p>
+		<a class="fs-outline" href="#join">Join the trial</a>
 	</section>
 
-	<section id="demo" class="landing-demo">
-		<div class="landing-demo-inner">
-			<p class="landing-kicker">Germany</p>
-			<h2>Germany is the first pilot country.</h2>
-			<p>The Greifswald clinic is the demo. No account.</p>
-			<div class="landing-demo-grid">
-				<article>
-					<strong>I’m looking for a doctor</strong>
-					<span>Language, insurance, then a match.</span>
-					<div class="actions">
-						<button class="btn btn-primary btn-sm" type="button" onclick={() => start('patient')}
-							>Start as patient</button
-						>
-						<SkipOnboardingButton role="patient" compact />
-					</div>
-				</article>
-				<article>
-					<strong>I’m the clinic</strong>
-					<span>Practice setup, schedule, open times.</span>
-					<div class="actions">
-						<button class="btn btn-sm" type="button" onclick={() => start('doctor')}
-							>Start as doctor</button
-						>
-						<SkipOnboardingButton role="doctor" compact />
-					</div>
-				</article>
-			</div>
+	<section id="pilot" class="fs-band">
+		<p class="fs-kicker">Languages</p>
+		<ul class="fs-langs" aria-label="Languages in the trial">
+			{#each languages as name}
+				<li>{name}</li>
+			{/each}
+		</ul>
+		<p class="fs-line">
+			Germany is the first pilot country. Test patients looking for a doctor, and clinics or doctors,
+			join the same list.
+		</p>
+	</section>
+
+	<section id="demo" class="fs-band fs-demo">
+		<p class="fs-kicker">Demo</p>
+		<h2>The Greifswald clinic.</h2>
+		<p class="fs-line">No account. Start from the beginning, or skip setup.</p>
+		<div class="fs-paths">
+			<article>
+				<strong>I’m looking for a doctor</strong>
+				<span>Language, insurance, then a match.</span>
+				<div class="actions">
+					<button class="fs-outline" type="button" onclick={() => start('patient')}>Start as patient</button>
+					<SkipOnboardingButton role="patient" compact />
+				</div>
+			</article>
+			<article>
+				<strong>I’m the clinic</strong>
+				<span>Practice setup, schedule, open times.</span>
+				<div class="actions">
+					<button class="fs-outline" type="button" onclick={() => start('doctor')}>Start as doctor</button>
+					<SkipOnboardingButton role="doctor" compact />
+				</div>
+			</article>
 		</div>
+	</section>
+
+	<section id="join" class="fs-band fs-join">
+		<p class="fs-kicker">Waitlist</p>
+		<h2>Join the Germany pilot.</h2>
+		<form onsubmit={join}>
+			<fieldset class="fs-who">
+				<legend>Who is joining</legend>
+				<label>
+					<input type="radio" name="who" value="test_patient" bind:group={who} />
+					Test patient
+				</label>
+				<label>
+					<input type="radio" name="who" value="clinic" bind:group={who} />
+					Clinic or doctor
+				</label>
+			</fieldset>
+			<label for="waitlist-email">Email</label>
+			<input
+				id="waitlist-email"
+				name="email"
+				type="email"
+				autocomplete="email"
+				inputmode="email"
+				required
+				placeholder="EMAIL"
+				bind:value={email}
+			/>
+			<button class="fs-outline" type="submit" disabled={pending}>
+				{pending ? 'Saving…' : 'Send'}
+			</button>
+			<p class="fs-status" aria-live="polite">
+				{#if result === 'joined'}You’re on the list. We’ll write when the Germany pilot opens for you.{/if}
+				{#if result === 'already'}That email is already on the list for this role.{/if}
+				{#if result === 'invalid'}Enter a full email address.{/if}
+				{#if result === 'unavailable'}The waitlist is not connected yet.{/if}
+				{#if result === 'failed'}Could not save that email. Try again in a moment.{/if}
+			</p>
+		</form>
 	</section>
 </div>
