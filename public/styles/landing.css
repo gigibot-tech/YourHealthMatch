@@ -35,14 +35,15 @@
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: #1e4fd6;
 }
 
 .landing-mark {
   width: 14px;
   height: 14px;
   border-radius: 4px;
-  background: #1e4fd6;
-  box-shadow: 8px 8px 0 #c9b89a;
+  background: #c9b89a;
+  box-shadow: 8px 8px 0 #1e4fd6;
   flex-shrink: 0;
 }
 
@@ -58,6 +59,28 @@
 
 .fs-nav-links a:hover {
   color: var(--fs-cobalt);
+}
+
+.fs-lang {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.fs-lang button {
+  border: 1px solid #1e4fd6;
+  background: transparent;
+  color: #1e4fd6;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.fs-lang button.on {
+  background: #1e4fd6;
+  color: #ffffff;
 }
 
 .fs-nav-cta {
@@ -101,7 +124,8 @@
   font-size: clamp(5.5rem, 18vw, 11rem);
   line-height: 0.82;
   letter-spacing: 0.02em;
-  color: #1e4fd6;
+  color: #c9b89a;
+  text-shadow: 0.045em 0.045em 0 #1e4fd6;
   margin: 0;
 }
 
@@ -161,6 +185,19 @@
   max-width: 42ch;
   color: #3f4553;
   font-size: 1.05rem;
+}
+
+.fs-points {
+  max-width: 46rem;
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #1a1d26;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.fs-points li + li {
+  margin-top: 0.55rem;
 }
 
 .fs-langs {

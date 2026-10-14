@@ -2,14 +2,23 @@
 	import { goto } from '$app/navigation';
 	import { joinTestSeekerWaitlist, type WaitlistJoinResult } from '$lib/adapters/testSeekerWaitlist';
 	import { startSession, type SessionRole } from '$lib/application/services';
+	import { LANDING, type LandingLang } from '$lib/i18n/landing';
 	import SkipOnboardingButton from '$lib/components/session/SkipOnboardingButton.svelte';
+	import { preferences } from '$lib/stores/app';
 
 	let email = $state('');
 	let who = $state<'test_patient' | 'clinic'>('test_patient');
 	let pending = $state(false);
 	let result = $state<WaitlistJoinResult | null>(null);
+	let lang = $state<LandingLang>($preferences.language === 'DE' ? 'DE' : 'EN');
 
+	const copy = $derived(LANDING[lang]);
 	const languages = ['Deutsch', 'English', 'Türkçe', 'العربية', 'Українська', 'Русский'];
+
+	function setLang(next: LandingLang) {
+		lang = next;
+		preferences.set({ language: next });
+	}
 
 	function start(nextRole: SessionRole) {
 		goto(startSession({ role: nextRole, skipOnboarding: false }));
@@ -31,82 +40,91 @@
 	}
 </script>
 
-<div class="landing" id="top">
+<div class="landing" id="top" lang={lang === 'DE' ? 'de' : 'en'}>
 	<nav class="fs-nav" aria-label="Page">
 		<a class="fs-brand" href="#top">
 			<span class="landing-mark" aria-hidden="true"></span>
 			YourHealthMatch
 		</a>
 		<div class="fs-nav-links">
-			<a href="#demo">Try the demo</a>
-			<a href="#pilot">Germany</a>
-			<a class="fs-nav-cta" href="#join">Join the trial</a>
+			<div class="fs-lang" role="group" aria-label={lang === 'DE' ? 'Sprache' : 'Language'}>
+				<button type="button" class:on={lang === 'DE'} onclick={() => setLang('DE')}>DE</button>
+				<button type="button" class:on={lang === 'EN'} onclick={() => setLang('EN')}>EN</button>
+			</div>
+			<a href="#demo">{copy.navDemo}</a>
+			<a href="#pilot">{copy.navGermany}</a>
+			<a class="fs-nav-cta" href="#join">{copy.navCta}</a>
 		</div>
 	</nav>
 
 	<section class="fs-hero">
-		<p class="fs-kicker">Germany · first pilot</p>
+		<p class="fs-kicker">{copy.kicker}</p>
 		<h1>
 			<span>Your</span>
 			<span>Health</span>
 			<span>Match</span>
 		</h1>
-		<p class="fs-tag">A doctor who already speaks your language.</p>
+		<p class="fs-tag">{copy.tagline}</p>
 	</section>
 
 	<section id="pilot" class="fs-band">
-		<p class="fs-kicker">Languages</p>
-		<ul class="fs-langs" aria-label="Languages in the trial">
+		<p class="fs-kicker">{copy.pilotKicker}</p>
+		<ul class="fs-langs" aria-label={lang === 'DE' ? 'Sprachen im Piloten' : 'Languages in the trial'}>
 			{#each languages as name}
 				<li>{name}</li>
 			{/each}
 		</ul>
-		<p class="fs-line">
-			Germany is the first pilot country. An interest in finding a doctor, and clinics or doctors,
-			join the same list.
-		</p>
+		<ul class="fs-points">
+			{#each copy.pilotPoints as point}
+				<li>{point}</li>
+			{/each}
+		</ul>
 	</section>
 
 	<section id="demo" class="fs-band fs-demo">
-		<p class="fs-kicker">Demo</p>
-		<h2>The Greifswald clinic.</h2>
-		<p class="fs-line">No account. Start from the beginning, or skip setup.</p>
+		<p class="fs-kicker">{copy.demoKicker}</p>
+		<h2>{copy.demoTitle}</h2>
+		<ul class="fs-points">
+			{#each copy.demoPoints as point}
+				<li>{point}</li>
+			{/each}
+		</ul>
 		<div class="fs-paths">
 			<article>
-				<strong>I’m looking for a doctor</strong>
-				<span>Language, insurance, then a match.</span>
+				<strong>{copy.patientTitle}</strong>
+				<span>{copy.patientBody}</span>
 				<div class="actions">
-					<button class="fs-outline" type="button" onclick={() => start('patient')}>Start as patient</button>
-					<SkipOnboardingButton role="patient" compact />
+					<button class="fs-outline" type="button" onclick={() => start('patient')}>{copy.patientCta}</button>
+					<SkipOnboardingButton role="patient" compact label={copy.skip} />
 				</div>
 			</article>
 			<article>
-				<strong>I’m the clinic</strong>
-				<span>Practice setup, schedule, open times.</span>
+				<strong>{copy.clinicTitle}</strong>
+				<span>{copy.clinicBody}</span>
 				<div class="actions">
-					<button class="fs-outline" type="button" onclick={() => start('doctor')}>Start as doctor</button>
-					<SkipOnboardingButton role="doctor" compact />
+					<button class="fs-outline" type="button" onclick={() => start('doctor')}>{copy.clinicCta}</button>
+					<SkipOnboardingButton role="doctor" compact label={copy.skip} />
 				</div>
 			</article>
 		</div>
 	</section>
 
 	<section id="join" class="fs-band fs-join">
-		<p class="fs-kicker">Waitlist</p>
-		<h2>Join the Germany pilot.</h2>
+		<p class="fs-kicker">{copy.joinKicker}</p>
+		<h2>{copy.joinTitle}</h2>
 		<form onsubmit={join}>
 			<fieldset class="fs-who">
-				<legend>Who is joining</legend>
+				<legend>{copy.joinLegend}</legend>
 				<label>
 					<input type="radio" name="who" value="test_patient" bind:group={who} />
-					Interest
+					{copy.interest}
 				</label>
 				<label>
 					<input type="radio" name="who" value="clinic" bind:group={who} />
-					Clinic or doctor
+					{copy.clinic}
 				</label>
 			</fieldset>
-			<label for="waitlist-email">Email</label>
+			<label for="waitlist-email">{copy.email}</label>
 			<input
 				id="waitlist-email"
 				name="email"
@@ -114,18 +132,18 @@
 				autocomplete="email"
 				inputmode="email"
 				required
-				placeholder="EMAIL"
+				placeholder={copy.email}
 				bind:value={email}
 			/>
 			<button class="fs-outline" type="submit" disabled={pending}>
-				{pending ? 'Saving…' : 'Send'}
+				{pending ? copy.saving : copy.send}
 			</button>
 			<p class="fs-status" aria-live="polite">
-				{#if result === 'joined'}You’re on the list. We’ll write when the Germany pilot opens for you.{/if}
-				{#if result === 'already'}That email is already on the list for this role.{/if}
-				{#if result === 'invalid'}Enter a full email address.{/if}
-				{#if result === 'unavailable'}The waitlist is not connected yet.{/if}
-				{#if result === 'failed'}Could not save that email. Try again in a moment.{/if}
+				{#if result === 'joined'}{copy.joined}{/if}
+				{#if result === 'already'}{copy.already}{/if}
+				{#if result === 'invalid'}{copy.invalid}{/if}
+				{#if result === 'unavailable'}{copy.unavailable}{/if}
+				{#if result === 'failed'}{copy.failed}{/if}
 			</p>
 		</form>
 	</section>
