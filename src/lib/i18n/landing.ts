@@ -12,10 +12,11 @@ export const LANDING = {
 		heroTitle: 'Find the right doctor in Germany.',
 		heroSub:
 			'YourHealthMatch helps international students, expats, and newcomers find a suitable doctor by language, location, and insurance.',
-		heroCta: 'Find a doctor',
+		heroCta: 'Set up a demo profile',
+		heroDemoNote: 'This saves a demo profile in this browser. Matching a doctor comes later.',
 		heroClinic: 'I have a clinic',
 		visualTitle: 'What a match checks',
-		chips: ['Family doctor', 'Your language', 'Your location', 'Your insurance'],
+		chips: ['Your language', 'Your location', 'Your insurance'],
 		exampleLabel: 'Example',
 		exampleRole: 'Family doctor',
 		exampleMeta: 'English · German · Public insurance',
@@ -96,7 +97,7 @@ export const LANDING = {
 			{ title: 'Germany first', body: 'This is the first country in the pilot.' },
 			{
 				title: 'Greifswald demo',
-				body: 'In Mecklenburg-Vorpommern. You can try a clinic without creating an account.'
+				body: 'In Mecklenburg-Vorpommern. We are trying to partner with international offices and universities first. You can try a clinic without creating an account.'
 			},
 			{
 				title: 'Six languages',
@@ -139,6 +140,63 @@ export const LANDING = {
 			'YourHealthMatch is a pilot for people in Germany who need a doctor that fits their language, location, and insurance.',
 		aboutBody:
 			'We match international students and expats with practices that have published an opening. The product does not replace a medical practice, and it does not pull calendars from other booking apps.',
+		aboutCirclesKicker: 'How matching works',
+		aboutCirclesTitle: 'Three things must meet.',
+		aboutCirclesLead:
+			'People, access, and providers overlap. Where they meet is the right match — not a score, a clear fit.',
+		aboutMatchLabel: 'The Right Match',
+		aboutCircles: [
+			{
+				id: 'people',
+				label: 'People',
+				detail:
+					'Individual needs, the languages you speak, and the circumstances that shape a first visit in a new country.'
+			},
+			{
+				id: 'access',
+				label: 'Access',
+				detail:
+					'Where you are, which insurance you hold, and whether a practice can actually see you.'
+			},
+			{
+				id: 'providers',
+				label: 'Providers',
+				detail:
+					'Suitable healthcare professionals, the services they offer, and openings they have published.'
+			}
+		] as const,
+		aboutCirclesHint: 'Select a circle to read more.',
+		aboutMapKicker: 'From search to visit',
+		aboutMapTitle: 'A path to the right doctor.',
+		aboutMapLead:
+			'Matching is a journey: you start with what you need, then follow a clear route to a practice that fits.',
+		aboutMapCaption:
+			'Illustrative map — not live clinic locations. Markers show example fits for language, place, and insurance.',
+		aboutMapYou: 'You',
+		aboutMapMatch: 'Your Match',
+		aboutMapProviders: [
+			{
+				id: 'a',
+				name: 'Family practice',
+				language: 'English · German',
+				area: 'Near the centre',
+				insurance: 'Public insurance'
+			},
+			{
+				id: 'b',
+				name: 'Walk-in clinic',
+				language: 'German',
+				area: 'East of the river',
+				insurance: 'Public · private'
+			},
+			{
+				id: 'c',
+				name: 'Your Match',
+				language: 'English · Arabic',
+				area: 'Campus area',
+				insurance: 'Public insurance'
+			}
+		] as const,
 		privacyTitle: 'Privacy',
 		privacyLead: 'What this pilot stores.',
 		privacyPoints: [
@@ -167,10 +225,11 @@ export const LANDING = {
 		heroTitle: 'Finden Sie die passende Ärztin oder den passenden Arzt in Deutschland.',
 		heroSub:
 			'YourHealthMatch hilft internationalen Studierenden, Expats und Zugezogenen, eine passende Ärztin oder einen passenden Arzt nach Sprache, Ort und Versicherung zu finden.',
-		heroCta: 'Ärztin oder Arzt finden',
+		heroCta: 'Demoprofil anlegen',
+		heroDemoNote: 'Das speichert ein Demoprofil in diesem Browser. Die Zuordnung zu einer Ärztin oder einem Arzt kommt später.',
 		heroClinic: 'Ich habe eine Praxis',
 		visualTitle: 'Was ein Treffer prüft',
-		chips: ['Hausärztin, Hausarzt', 'Ihre Sprache', 'Ihr Ort', 'Ihre Versicherung'],
+		chips: ['Ihre Sprache', 'Ihr Ort', 'Ihre Versicherung'],
 		exampleLabel: 'Beispiel',
 		exampleRole: 'Hausärztin, Hausarzt',
 		exampleMeta: 'Englisch · Deutsch · Gesetzlich',
@@ -255,7 +314,7 @@ export const LANDING = {
 			{ title: 'Zuerst Deutschland', body: 'Das ist das erste Land in diesem Piloten.' },
 			{
 				title: 'Demo in Greifswald',
-				body: 'In Mecklenburg-Vorpommern. Sie können eine Praxis ohne Konto ausprobieren.'
+				body: 'In Mecklenburg-Vorpommern. Zuerst wollen wir mit International Offices und Hochschulen zusammenarbeiten. Sie können eine Praxis ohne Konto ausprobieren.'
 			},
 			{
 				title: 'Sechs Sprachen',
@@ -300,6 +359,63 @@ export const LANDING = {
 			'YourHealthMatch ist ein Pilot für Menschen in Deutschland, die eine Ärztin oder einen Arzt nach Sprache, Ort und Versicherung brauchen.',
 		aboutBody:
 			'Wir verbinden internationale Studierende und Zugezogene mit Praxen, die einen Termin veröffentlicht haben. Das Produkt ersetzt keine Praxis und liest keine Kalender anderer Buchungsdienste.',
+		aboutCirclesKicker: 'So funktioniert die Zuordnung',
+		aboutCirclesTitle: 'Drei Dinge müssen zusammenkommen.',
+		aboutCirclesLead:
+			'Mensch, Zugang und Praxis überlappen. Wo sie sich treffen, ist der passende Treffer — kein versteckter Score, ein klarer Fit.',
+		aboutMatchLabel: 'Der passende Treffer',
+		aboutCircles: [
+			{
+				id: 'people',
+				label: 'Mensch',
+				detail:
+					'Individuelle Bedürfnisse, die Sprachen, die Sie sprechen, und die Umstände eines ersten Besuchs in einem neuen Land.'
+			},
+			{
+				id: 'access',
+				label: 'Zugang',
+				detail:
+					'Wo Sie sind, welche Versicherung Sie haben, und ob eine Praxis Sie wirklich aufnehmen kann.'
+			},
+			{
+				id: 'providers',
+				label: 'Praxis',
+				detail:
+					'Passende Ärztinnen und Ärzte, die Leistungen der Praxis und die Termine, die sie veröffentlicht hat.'
+			}
+		] as const,
+		aboutCirclesHint: 'Wählen Sie einen Kreis, um mehr zu lesen.',
+		aboutMapKicker: 'Von der Suche zum Termin',
+		aboutMapTitle: 'Ein Weg zur passenden Ärztin oder zum passenden Arzt.',
+		aboutMapLead:
+			'Die Zuordnung ist ein Weg: Sie beginnen mit dem, was Sie brauchen, und folgen einer klaren Route zu einer passenden Praxis.',
+		aboutMapCaption:
+			'Illustrierte Karte — keine echten Praxisstandorte. Die Markierungen zeigen Beispieltreffer für Sprache, Ort und Versicherung.',
+		aboutMapYou: 'Sie',
+		aboutMapMatch: 'Ihr Treffer',
+		aboutMapProviders: [
+			{
+				id: 'a',
+				name: 'Hausarztpraxis',
+				language: 'Englisch · Deutsch',
+				area: 'Nahe dem Zentrum',
+				insurance: 'Gesetzlich'
+			},
+			{
+				id: 'b',
+				name: 'Ambulanz',
+				language: 'Deutsch',
+				area: 'Östlich des Flusses',
+				insurance: 'Gesetzlich · privat'
+			},
+			{
+				id: 'c',
+				name: 'Ihr Treffer',
+				language: 'Englisch · Arabisch',
+				area: 'Campusnähe',
+				insurance: 'Gesetzlich'
+			}
+		] as const,
 		privacyTitle: 'Datenschutz',
 		privacyLead: 'Was dieser Pilot speichert.',
 		privacyPoints: [
