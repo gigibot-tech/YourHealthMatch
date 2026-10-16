@@ -40,7 +40,7 @@
 				role: 'patient'
 			});
 			window.location.href = mailto;
-			notice = 'Opening email to contact@yourhealthmatch.com…';
+			notice = 'Opening email to contact@yourhealthmatch.de…';
 		} catch (e) {
 			notice = e instanceof Error ? e.message : 'Could not submit suggestion';
 		}
@@ -73,7 +73,7 @@
 		/>
 		<span>
 			<strong>Other — suggest a system</strong>
-			<span class="detail"> · opens email to contact@yourhealthmatch.com</span>
+			<span class="detail"> · opens email to contact@yourhealthmatch.de</span>
 		</span>
 	</label>
 

@@ -103,7 +103,8 @@
 		</div>
 	</div>
 	<div class="field">
-		<label for="newPatient">New patient?</label>
+		<label for="newPatient">{t(lang, 'profile.firstVisit')}</label>
+		<p class="detail">{t(lang, 'profile.firstVisitHelp')}</p>
 		<select
 			id="newPatient"
 			value={form.newPatient === null ? '' : String(form.newPatient)}
@@ -114,8 +115,8 @@
 			required
 		>
 			<option value="">Select…</option>
-			<option value="true">Yes</option>
-			<option value="false">No</option>
+			<option value="true">{t(lang, 'profile.firstVisitYes')}</option>
+			<option value="false">{t(lang, 'profile.firstVisitNo')}</option>
 		</select>
 	</div>
 	<div class="field">

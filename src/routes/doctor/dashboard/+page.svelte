@@ -6,6 +6,7 @@
 		factsService,
 		practiceService
 	} from '$lib/application/services';
+	import { interestRepo } from '$lib/adapters/localRepos';
 	import { appointments, availability, preferences, role } from '$lib/stores/app';
 	import { fill, greetingKey, t, uiLanguage } from '$lib/i18n';
 	import { CANCEL_MIN_NOTICE_HOURS } from '$lib/config/clinicPolicy';
@@ -84,8 +85,19 @@
 		void $appointments;
 		return practiceService.dayTimeline({ practiceId, doctorId, date: today });
 	});
+	let interests = $state(interestRepo.getAll());
+	$effect(() => {
+		return interestRepo.subscribe((rows) => {
+			interests = rows;
+		});
+	});
+	let openToday = $derived(timeline.slots.filter((slot) => !slot.appointmentId));
+	let waitlist = $derived(
+		interests.filter((row) => row.intent === 'waitlist' || row.intent === 'beta')
+	);
 	let factCards = $derived.by(() => {
 		void $appointments;
+		void interests;
 		return factsService.forDoctor(practiceId);
 	});
 	let factHeading = $derived(
@@ -155,36 +167,66 @@
 	</div>
 </div>
 
-<FactsCarousel cards={factCards} heading={factHeading} />
-
-{#if pending.length}
-	<div class="pending-strip">
-		{#each pending as a}
-			<div class="pending-chip">
-				<span
-					><strong>{a.patientName}</strong> · {a.date === today
-						? formatTime(a.time)
-						: `${formatApptDate(a.date)} · ${formatTime(a.time)}`} · {a.reason}</span
-				>
-				<div class="appt-actions">
-					<button class="btn btn-primary btn-sm" type="button" onclick={() => act(a.id, 'confirm')}
-						>Confirm</button
-					>
-					{#if a.allowedActions.includes('reject')}
-						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'reject')}
-							>Decline</button
+<section class="clinic-board" aria-label="Clinic day">
+	<article>
+		<h2>Open capacity</h2>
+		<p class="clinic-count">{openToday.length} open today</p>
+		{#if openToday.length === 0}
+			<p class="detail">No open times today. <a href="/doctor/schedule">Open hours</a>.</p>
+		{:else}
+			<ul>
+				{#each openToday as slot}
+					<li>{formatTime(slot.time)}</li>
+				{/each}
+			</ul>
+		{/if}
+	</article>
+	<article>
+		<h2>Waitlist</h2>
+		<p class="clinic-count">{waitlist.length} waiting</p>
+		{#if waitlist.length === 0}
+			<p class="detail">No one has asked for a time that is not open yet.</p>
+		{:else}
+			<ul>
+				{#each waitlist as row}
+					<li>
+						<strong>{row.email}</strong>
+						{row.note || row.symptomId || 'A visit'}
+						· {row.requirements.language || '—'}
+						· {row.requirements.location || row.requirements.city || '—'}
+						· {row.requirements.insurance || '—'}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</article>
+	<article>
+		<h2>Incoming patients</h2>
+		<p class="clinic-count">{pending.length} to confirm</p>
+		{#if pending.length === 0}
+			<p class="detail">No visit is waiting for you to confirm.</p>
+		{:else}
+			<ul class="incoming-list">
+				{#each pending as a}
+					<li>
+						<strong>{a.patientName}</strong>
+						{a.reason} · {a.date === today
+							? formatTime(a.time)
+							: `${formatApptDate(a.date)} · ${formatTime(a.time)}`}
+						<button class="btn btn-primary" type="button" onclick={() => act(a.id, 'confirm')}
+							>Confirm {a.patientName}</button
 						>
-					{/if}
-					{#if a.allowedActions.includes('cancel')}
-						<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'cancel')}
-							>{removalLabel(a)}</button
-						>
-					{/if}
-				</div>
-			</div>
-		{/each}
-	</div>
-{/if}
+						{#if a.allowedActions.includes('reject')}
+							<button class="btn btn-ghost btn-sm" type="button" onclick={() => act(a.id, 'reject')}
+								>Decline</button
+							>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</article>
+</section>
 
 {#if next}
 	{@const n = next}
@@ -301,3 +343,5 @@
 		{/if}
 	</aside>
 </div>
+
+<FactsCarousel cards={factCards} heading={factHeading} />

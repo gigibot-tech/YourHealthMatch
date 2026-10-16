@@ -569,8 +569,58 @@
   border: 1px solid var(--color-border);
 }
 
+.clinic-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.clinic-board article {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.clinic-board h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.clinic-count {
+  margin: 0.2rem 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.clinic-board ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.clinic-board li {
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.incoming-list button {
+  display: block;
+  margin-top: 0.45rem;
+}
+
 .facts-carousel {
+  margin-top: 1.75rem;
   margin-bottom: 1.75rem;
+}
+
+@media (max-width: 900px) {
+  .clinic-board {
+    grid-template-columns: 1fr;
+  }
 }
 
 .facts-carousel.compact {

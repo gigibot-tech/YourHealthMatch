@@ -180,7 +180,7 @@ export const externalSystemService = {
 		else window.open(href, '_blank', 'noopener,noreferrer');
 	},
 
-	/** Notify hooks + mailto:contact@yourhealthmatch.com for missing catalog entries. */
+	/** Notify hooks + mailto:contact@yourhealthmatch.de for missing catalog entries. */
 	async suggestOther(input: {
 		name: string;
 		note?: string;

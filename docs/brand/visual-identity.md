@@ -6,14 +6,15 @@ Homepage system. The rest of the product (search, profiles, onboarding) should f
 
 | Role | Name | Hex | Use |
 | --- | --- | --- | --- |
-| Primary | Cobalt blue | `#203B73` | Headings, primary buttons, navigation, footer |
-| Accent | Coral orange | `#F28B72` | Small highlights, kickers, the logo mark. Not large areas or long text |
-| Background | Cream | `#F5EBDD` | Page ground |
-| Support | Sage green | `#B8D9CE` | Alternate bands, step numbers, calm cards |
+| Primary | Deep teal | `#123C3A` | Headings, wordmark, selected bands |
+| Action | Electric lime | `#D8F36A` | Primary buttons only. Charcoal text. Never small text on white |
+| Background | Warm white | `#FAF9F4` | Page ground |
+| Support | Soft mint | `#DDEFE7` | Demo band and informational cards |
+| Accent | Coral | `#FF806B` | Kickers and rare marks |
+| Text | Charcoal | `#252D2B` | Body text |
+| Secondary | Mid grey | `#66736F` | Supporting text |
 
-Text on cream, coral, and sage is dark navy (`#1C2433`), not cobalt-on-sage for paragraphs. Primary buttons are cobalt with white text.
-
-Starting balance: cream about half the page, cobalt for structure, sage and coral as the smaller notes.
+Primary buttons are lime with charcoal text. Headings are deep teal.
 
 ## Personality
 
@@ -23,6 +24,6 @@ Motion stays small: hover on buttons and links, no parallax.
 
 ## Homepage
 
-The page ground is white. Beige (`#F5EBDD`) is one content band. Sage (`#B8D9CE`) is only the demo band. Cobalt is for headings and the **Find a doctor** button, not for large backgrounds. The footer is white.
+The page ground is warm white. Deep teal is for headings and one closing band. Soft mint is the demo and audience bands. Electric lime is the **Explore the demo** button. The footer is warm white.
 
-Photography should stay specific and natural. The current scene is the supplied hero, cropped so the headline is set in our type, not baked into the picture.
+The hero is an illustrated map with sample doctor cards, not a photograph. The same map language can be reused; it is not a live clinic map.

@@ -28,7 +28,7 @@ describe('externalSystems', () => {
 		expect(ranked.some((s) => s.id === 'doctolib')).toBe(true);
 	});
 
-	it('mailto targets contact@yourhealthmatch.com', () => {
+	it('mailto targets contact@yourhealthmatch.de', () => {
 		expect(mailtoSuggestOther('Medgate', 'note')).toContain(CONTACT_EMAIL);
 	});
 

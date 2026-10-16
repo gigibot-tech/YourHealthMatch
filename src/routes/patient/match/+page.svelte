@@ -16,6 +16,7 @@
 	import { recommendationsForPatient } from '$lib/application/careRecommendations';
 	import { leadFromPhrase, resolveLead, SYMPTOMS } from '$lib/domain/care/symptoms';
 	import { languageLabel } from '$lib/domain/languages';
+	import { deliverMatchInterest } from '$lib/adapters/matchInterestNotice';
 	import type { MatchResult } from '$lib/domain/matching/matchingEngine';
 
 	let lang = $derived(uiLanguage($preferences.language));
@@ -28,9 +29,9 @@
 	}
 
 	let email = $state('');
-	let betaInterest = $state<'yes' | 'maybe' | 'no'>('maybe');
 	let notice = $state('');
 	let waitlistSymptomId = $state<string | null>(null);
+	let sendingInterest = $state(false);
 	let phrase = $state('');
 	let focusLeadId = $state<string | null>(null);
 	let modalityOverride = $state<'either' | 'in_person' | 'video'>('either');
@@ -104,18 +105,29 @@
 	}
 
 	async function joinWaitlist(symptomId: string) {
+		if (sendingInterest) return;
+		sendingInterest = true;
+		notice = '';
 		try {
-			await interestService.registerInterest({
+			const interest = await interestService.registerInterest({
 				email,
 				intent: 'waitlist',
-				betaInterest,
 				symptomId,
+				note: symptomText(symptomId),
 				requirements: effectiveReqs
 			});
+			const delivered = await deliverMatchInterest(interest, symptomText(symptomId));
+			if (delivered !== 'emailed') {
+				notice = text('match.interestFailed');
+				return;
+			}
 			waitlistSymptomId = symptomId;
-			notice = 'Your email is saved for this symptom.';
+			notice = text('match.interestSent');
+			email = '';
 		} catch (e) {
-			notice = e instanceof Error ? e.message : 'Could not join waitlist';
+			notice = e instanceof Error ? e.message : text('match.interestFailed');
+		} finally {
+			sendingInterest = false;
 		}
 	}
 
@@ -273,26 +285,29 @@
 					{#if waitlistSymptomId === rec.id}
 						<p class="detail">{notice}</p>
 					{:else}
-						<div class="field">
-							<label for={`email-${rec.id}`}>Email</label>
-							<input
-								id={`email-${rec.id}`}
-								type="email"
-								bind:value={email}
-								placeholder="you@email.com"
-							/>
-						</div>
-						<div class="field">
-							<label for={`beta-${rec.id}`}>Try free beta?</label>
-							<select id={`beta-${rec.id}`} bind:value={betaInterest}>
-								<option value="yes">Yes</option>
-								<option value="maybe">Maybe</option>
-								<option value="no">No</option>
-							</select>
-						</div>
-						<button class="btn btn-primary" type="button" onclick={() => joinWaitlist(rec.id)}
-							>Save interest for this symptom</button
+						<form
+							onsubmit={(event) => {
+								event.preventDefault();
+								joinWaitlist(rec.id);
+							}}
 						>
+							<div class="field">
+								<label for={`email-${rec.id}`}>{text('match.interestEmail')}</label>
+								<input
+									id={`email-${rec.id}`}
+									type="email"
+									required
+									bind:value={email}
+									placeholder="you@email.com"
+								/>
+							</div>
+							<button class="btn btn-primary" type="submit" disabled={sendingInterest}>
+								{text('match.interestSend')}
+							</button>
+							{#if notice && waitlistSymptomId !== rec.id}
+								<p class="detail">{notice}</p>
+							{/if}
+						</form>
 					{/if}
 				</div>
 			{/if}

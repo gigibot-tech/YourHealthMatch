@@ -3,11 +3,90 @@
  * Mounted on the shared Express app via backend/app.js OR standalone Netlify function.
  */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const TEAM_INBOX = 'contact@yourhealthmatch.de';
 
 /** In-memory store for serverless demo (ephemeral). */
 const store = new Map();
 
-exports.handler = async (event) => {
+function interestText(record) {
+  const req = record.requirements || {};
+  const firstVisit =
+    req.newPatient === true ? 'Yes, first visit' : req.newPatient === false ? 'Already a patient' : '';
+  return [
+    `From: ${record.email}`,
+    `Concern: ${record.symptomLabel || record.symptomId || ''}`,
+    `Language: ${req.language || ''}`,
+    `Place: ${[req.location || req.city, req.postcode].filter(Boolean).join(' ')}`,
+    `Insurance: ${req.insurance || ''}`,
+    `Krankenkasse: ${req.krankenkasse || ''}`,
+    `First visit: ${firstVisit}`,
+    `Visit type: ${req.modality || ''}`,
+    `Times: ${req.preferredWindow || ''}`,
+    `Note: ${record.note || ''}`
+  ].join('\n');
+}
+
+async function storeInSupabase(record) {
+  const base = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!base || !key) return false;
+  const req = record.requirements || {};
+  try {
+    const response = await fetch(`${base}/rest/v1/match_interest`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        email: record.email,
+        symptom_id: record.symptomId || null,
+        symptom_label: record.symptomLabel || record.note || '',
+        language: req.language || '',
+        location: req.location || req.city || '',
+        postcode: req.postcode || '',
+        insurance: req.insurance || '',
+        krankenkasse: req.krankenkasse || '',
+        new_patient: req.newPatient,
+        modality: req.modality || '',
+        preferred_window: req.preferredWindow || '',
+        notify: TEAM_INBOX
+      })
+    });
+    return response.ok || response.status === 409;
+  } catch {
+    return false;
+  }
+}
+
+async function emailTeam(record) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM;
+  if (!key || !from) return false;
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from,
+        to: [TEAM_INBOX],
+        reply_to: record.email,
+        subject: `Match interest: ${record.symptomLabel || record.symptomId || 'no opening'}`,
+        text: interestText(record)
+      })
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -39,7 +118,12 @@ exports.handler = async (event) => {
         updatedAt: new Date().toISOString()
       };
       store.set(email, record);
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, interest: record }) };
+      const [stored, emailed] = await Promise.all([storeInSupabase(record), emailTeam(record)]);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ ok: true, emailed, stored, interest: record })
+      };
     }
 
     if (event.httpMethod === 'GET') {
@@ -68,4 +152,4 @@ exports.handler = async (event) => {
   } catch (e) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: String(e.message || e) }) };
   }
-};
+}

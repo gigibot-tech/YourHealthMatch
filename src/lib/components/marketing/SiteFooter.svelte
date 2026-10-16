@@ -7,16 +7,19 @@
 
 <footer class="site-footer">
 	<div class="site-footer-inner">
-		<div>
-			<strong>YourHealthMatch</strong>
-			<p>{copy.footerNote}</p>
+		<div class="site-footer-brand">
+			<span class="site-mark" aria-hidden="true"></span>
+			<div>
+				<strong>YourHealthMatch</strong>
+				<p>{copy.footerNote}</p>
+			</div>
 		</div>
 		<nav aria-label="Footer">
-			<a href="/about">{copy.footerAbout}</a>
+			<a href="/#why">{copy.footerAbout}</a>
 			<a href="/#join">{copy.footerContact}</a>
 			<a href="/privacy">{copy.footerPrivacy}</a>
 			<a href="/legal">{copy.footerLegal}</a>
-			<a href="mailto:contact@yourhealthmatch.com">contact@yourhealthmatch.com</a>
+			<a href="mailto:contact@yourhealthmatch.de">contact@yourhealthmatch.de</a>
 		</nav>
 	</div>
 </footer>

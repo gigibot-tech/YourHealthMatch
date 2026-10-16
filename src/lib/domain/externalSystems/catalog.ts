@@ -92,7 +92,7 @@ export const EXTERNAL_SYSTEMS: ExternalSystem[] = [
 ];
 
 export const SUGGEST_OTHER_ID = 'suggest_other';
-export const CONTACT_EMAIL = 'contact@yourhealthmatch.com';
+export const CONTACT_EMAIL = 'contact@yourhealthmatch.de';
 
 export type ExternalSystemPrefs = {
 	/** Catalog ids the user already uses or wants shortcuts for */

@@ -9,10 +9,11 @@ export const LANDING = {
 		navCta: 'Find a doctor',
 		langLabel: 'Language',
 		heroKicker: 'Germany pilot',
-		heroTitle: 'Find the right doctor in Germany.',
+		heroTitle: 'Find the right doctor. Feel at home in Germany.',
 		heroSub:
-			'YourHealthMatch helps international students, expats, and newcomers find a suitable doctor by language, location, and insurance.',
-		heroCta: 'Set up a demo profile',
+			'YourHealthMatch helps international students, expats, and newcomers find suitable doctors and dentists based on language, location, and health insurance.',
+		heroCta: 'Explore the demo',
+		heroWaitlist: 'Join the waitlist',
 		heroDemoNote:
 			'This saves a demo profile in this browser, then shows doctors that fit your language, place, and insurance.',
 		heroClinic: 'I have a clinic',
@@ -67,19 +68,19 @@ export const LANDING = {
 			}
 		],
 		howKicker: 'How it works',
-		howTitle: 'Find your doctor in three steps.',
+		howTitle: 'Three steps. No hidden score.',
 		steps: [
 			{
-				title: 'Search and filter',
-				body: 'Tell us your language, where you are, and your insurance.'
+				title: 'Find',
+				body: 'Search by location, language, and insurance.'
 			},
 			{
-				title: 'Compare and choose',
-				body: 'Each result says why that practice fits. There is no hidden score. If the doctor is on another booking platform, we take you there.'
+				title: 'Match',
+				body: 'See doctors whose language and insurance fit.'
 			},
 			{
-				title: 'Book a visit',
-				body: 'Take a time the clinic has opened here, or continue on the practice’s own platform when that is where the doctor is listed.'
+				title: 'Feel at home',
+				body: 'A real place in the pilot starts on the waitlist.'
 			}
 		],
 		benefitsKicker: 'Why YourHealthMatch',
@@ -116,6 +117,43 @@ export const LANDING = {
 		clinicBody: 'Set up the practice, then open the schedule and the available times.',
 		clinicCta: 'Start as a clinic',
 		skip: 'Skip setup',
+		sampleKicker: 'Try it',
+		sampleTitle: 'See how a match would look.',
+		sampleEmpty: 'No doctors for that combination. This example is Greifswald only.',
+		sampleHomeTitle: 'Want a real place?',
+		sampleHomeBody:
+			'The doctors on this page are mocked examples. A real place in the pilot starts on the waitlist.',
+		sampleHomeCta: 'Join the waitlist',
+		filterLocation: 'Location',
+		filterType: 'Healthcare type',
+		filterLanguage: 'Preferred language',
+		filterInsurance: 'Insurance',
+		filterAny: 'Any',
+		filterFamily: 'Family doctor',
+		filterDentist: 'Dentist',
+		filterEye: 'Eye care',
+		filterSkin: 'Skin',
+		filterEn: 'English',
+		filterDe: 'German',
+		filterAr: 'Arabic',
+		filterPublic: 'Public',
+		filterPrivate: 'Private',
+		whoKicker: 'Who we help',
+		whoTitle: 'Built for a first year in Germany.',
+		who: [
+			{
+				title: 'International students',
+				body: 'A practice that lists your language, near campus, and accepts your cover.'
+			},
+			{
+				title: 'Expats',
+				body: 'Public, private, or self-pay stated up front, before you call.'
+			},
+			{
+				title: 'Newcomers',
+				body: 'Family doctor, dentist, and specialist are not the same door.'
+			}
+		],
 		finalKicker: 'Get started',
 		finalTitle: 'Find a suitable doctor.',
 		finalSub: 'Start with your language and insurance, or leave an email for a place in the pilot.',
@@ -144,26 +182,26 @@ export const LANDING = {
 		aboutCirclesKicker: 'How matching works',
 		aboutCirclesTitle: 'Three things must meet.',
 		aboutCirclesLead:
-			'People, access, and providers overlap. Where they meet is the right match — not a score, a clear fit.',
+			'You, care, and connection overlap. Where they meet is the right match — not a score, a clear fit.',
 		aboutMatchLabel: 'The Right Match',
 		aboutCircles: [
 			{
 				id: 'people',
-				label: 'People',
+				label: 'You',
 				detail:
-					'Individual needs, the languages you speak, and the circumstances that shape a first visit in a new country.'
+					'Your language, your situation, and what you need from a first visit in a new country.'
 			},
 			{
 				id: 'access',
-				label: 'Access',
+				label: 'Care',
 				detail:
-					'Where you are, which insurance you hold, and whether a practice can actually see you.'
+					'Doctors and dentists who list a language, a place, and the insurance they accept.'
 			},
 			{
 				id: 'providers',
-				label: 'Providers',
+				label: 'Connection',
 				detail:
-					'Suitable healthcare professionals, the services they offer, and openings they have published.'
+					'A visible route from what you need to a practice that fits. Not a hidden score.'
 			}
 		] as const,
 		aboutCirclesHint: 'Select a circle to read more.',
@@ -204,14 +242,14 @@ export const LANDING = {
 			'Profile, matches, and appointments in the demo stay in this browser.',
 			'If you join the list, we store the email and whether you are a patient or a clinic.',
 			'We do not sell that address. We use it to write when a pilot place opens.',
-			'Questions: contact@yourhealthmatch.com'
+			'Questions: contact@yourhealthmatch.de'
 		],
 		legalTitle: 'Legal notice',
 		legalLead: 'This website is a product pilot.',
 		legalPoints: [
 			'It is not a medical practice and does not provide emergency care. Call 112 in an emergency.',
 			'A full company imprint will be published before a commercial launch.',
-			'Contact: contact@yourhealthmatch.com'
+			'Contact: contact@yourhealthmatch.de'
 		],
 		backHome: 'Back to home'
 	},
@@ -223,10 +261,11 @@ export const LANDING = {
 		navCta: 'Ärztin oder Arzt finden',
 		langLabel: 'Sprache',
 		heroKicker: 'Pilot in Deutschland',
-		heroTitle: 'Finden Sie die passende Ärztin oder den passenden Arzt in Deutschland.',
+		heroTitle: 'Finden Sie die passende Ärztin oder den passenden Arzt. Fühlen Sie sich in Deutschland zu Hause.',
 		heroSub:
-			'YourHealthMatch hilft internationalen Studierenden, Expats und Zugezogenen, eine passende Ärztin oder einen passenden Arzt nach Sprache, Ort und Versicherung zu finden.',
-		heroCta: 'Demoprofil anlegen',
+			'YourHealthMatch hilft internationalen Studierenden, Expats und Zugezogenen, passende Ärztinnen, Ärzte und Zahnärztinnen nach Sprache, Ort und Versicherung zu finden.',
+		heroCta: 'Demo öffnen',
+		heroWaitlist: 'Auf die Warteliste',
 		heroDemoNote:
 			'Das speichert ein Demoprofil in diesem Browser und zeigt dann Praxen, die zu Sprache, Ort und Versicherung passen.',
 		heroClinic: 'Ich habe eine Praxis',
@@ -282,19 +321,19 @@ export const LANDING = {
 			}
 		],
 		howKicker: 'So funktioniert es',
-		howTitle: 'In drei Schritten zur passenden Praxis.',
+		howTitle: 'Drei Schritte. Keine versteckte Punktzahl.',
 		steps: [
 			{
-				title: 'Suchen und filtern',
-				body: 'Nennen Sie Ihre Sprache, Ihren Ort und Ihre Versicherung.'
+				title: 'Finden',
+				body: 'Suchen Sie nach Ort, Sprache und Versicherung.'
 			},
 			{
-				title: 'Vergleichen und wählen',
-				body: 'Jedes Ergebnis sagt, warum die Praxis passt. Es gibt keine versteckte Punktzahl. Wenn die Ärztin oder der Arzt auf einer anderen Buchungsplattform ist, führen wir Sie dorthin.'
+				title: 'Treffer',
+				body: 'Sehen Sie Ärztinnen und Ärzte, deren Sprache und Versicherung passen.'
 			},
 			{
-				title: 'Einen Besuch buchen',
-				body: 'Nehmen Sie eine Zeit, die die Praxis hier geöffnet hat, oder gehen Sie auf die eigene Plattform der Praxis, wenn die Person dort geführt wird.'
+				title: 'Zu Hause fühlen',
+				body: 'Ein echter Platz im Piloten beginnt auf der Warteliste.'
 			}
 		],
 		benefitsKicker: 'Warum YourHealthMatch',
@@ -335,6 +374,43 @@ export const LANDING = {
 		clinicBody: 'Ich richte die Praxis ein und öffne danach den Kalender und die freien Zeiten.',
 		clinicCta: 'Als Praxis starten',
 		skip: 'Einrichtung überspringen',
+		sampleKicker: 'Ausprobieren',
+		sampleTitle: 'So würde ein Treffer aussehen.',
+		sampleEmpty: 'Keine Ärztinnen oder Ärzte für diese Auswahl. Dieses Beispiel ist nur Greifswald.',
+		sampleHomeTitle: 'Einen echten Platz?',
+		sampleHomeBody:
+			'Die Ärztinnen und Ärzte auf dieser Seite sind erfundene Beispiele. Ein echter Platz im Piloten beginnt auf der Warteliste.',
+		sampleHomeCta: 'Auf die Warteliste',
+		filterLocation: 'Ort',
+		filterType: 'Art der Versorgung',
+		filterLanguage: 'Bevorzugte Sprache',
+		filterInsurance: 'Versicherung',
+		filterAny: 'Alle',
+		filterFamily: 'Hausärztin, Hausarzt',
+		filterDentist: 'Zahnärztin, Zahnarzt',
+		filterEye: 'Augen',
+		filterSkin: 'Haut',
+		filterEn: 'Englisch',
+		filterDe: 'Deutsch',
+		filterAr: 'Arabisch',
+		filterPublic: 'Gesetzlich',
+		filterPrivate: 'Privat',
+		whoKicker: 'Wen wir unterstützen',
+		whoTitle: 'Für das erste Jahr in Deutschland.',
+		who: [
+			{
+				title: 'Internationale Studierende',
+				body: 'Eine Praxis, die Ihre Sprache führt, in Campusnähe liegt und Ihre Versicherung annimmt.'
+			},
+			{
+				title: 'Expats',
+				body: 'Gesetzlich, privat oder selbstzahlend steht fest, bevor Sie anrufen.'
+			},
+			{
+				title: 'Zugezogene',
+				body: 'Hausärztin, Zahnärztin und Fachärztin sind nicht dieselbe Tür.'
+			}
+		],
 		finalKicker: 'Beginnen',
 		finalTitle: 'Finden Sie eine passende Ärztin oder einen passenden Arzt.',
 		finalSub:
@@ -364,26 +440,26 @@ export const LANDING = {
 		aboutCirclesKicker: 'So funktioniert die Zuordnung',
 		aboutCirclesTitle: 'Drei Dinge müssen zusammenkommen.',
 		aboutCirclesLead:
-			'Mensch, Zugang und Praxis überlappen. Wo sie sich treffen, ist der passende Treffer — kein versteckter Score, ein klarer Fit.',
+			'Sie, Versorgung und Verbindung überlappen. Wo sie sich treffen, ist der passende Treffer — kein versteckter Score, ein klarer Fit.',
 		aboutMatchLabel: 'Der passende Treffer',
 		aboutCircles: [
 			{
 				id: 'people',
-				label: 'Mensch',
+				label: 'Sie',
 				detail:
-					'Individuelle Bedürfnisse, die Sprachen, die Sie sprechen, und die Umstände eines ersten Besuchs in einem neuen Land.'
+					'Ihre Sprache, Ihre Lage und das, was Sie beim ersten Besuch in einem neuen Land brauchen.'
 			},
 			{
 				id: 'access',
-				label: 'Zugang',
+				label: 'Versorgung',
 				detail:
-					'Wo Sie sind, welche Versicherung Sie haben, und ob eine Praxis Sie wirklich aufnehmen kann.'
+					'Ärztinnen, Ärzte und Zahnärztinnen, die Sprache, Ort und angenommene Versicherung angeben.'
 			},
 			{
 				id: 'providers',
-				label: 'Praxis',
+				label: 'Verbindung',
 				detail:
-					'Passende Ärztinnen und Ärzte, die Leistungen der Praxis und die Termine, die sie veröffentlicht hat.'
+					'Ein sichtbarer Weg von dem, was Sie brauchen, zu einer passenden Praxis. Keine versteckte Punktzahl.'
 			}
 		] as const,
 		aboutCirclesHint: 'Wählen Sie einen Kreis, um mehr zu lesen.',
@@ -424,14 +500,14 @@ export const LANDING = {
 			'Profil, Treffer und Termine in der Demo bleiben in diesem Browser.',
 			'Wenn Sie sich eintragen, speichern wir die E-Mail und ob Sie Patientin, Patient oder Praxis sind.',
 			'Wir verkaufen diese Adresse nicht. Wir nutzen sie, um zu schreiben, wenn ein Platz frei ist.',
-			'Fragen: contact@yourhealthmatch.com'
+			'Fragen: contact@yourhealthmatch.de'
 		],
 		legalTitle: 'Impressum',
 		legalLead: 'Diese Website ist ein Produktpilot.',
 		legalPoints: [
 			'Sie ist keine Arztpraxis und leistet keine Notfallversorgung. Im Notfall 112.',
 			'Ein vollständiges Impressum des Betreibers wird vor einem kommerziellen Start veröffentlicht.',
-			'Kontakt: contact@yourhealthmatch.com'
+			'Kontakt: contact@yourhealthmatch.de'
 		],
 		backHome: 'Zur Startseite'
 	}

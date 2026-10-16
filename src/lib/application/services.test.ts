@@ -279,7 +279,7 @@ describe('services integration', () => {
 		expect(interest.intent).toBe('contact_practice');
 		expect(interest.symptomId).toBe('unwell');
 		expect(interest.note).toBe('Arabic-speaking, GKV');
-		expect(mailto).toContain('contact@yourhealthmatch.com');
+		expect(mailto).toContain('contact@yourhealthmatch.de');
 		expect(interestService.forPractice('prac_turner').some((i) => i.id === interest.id)).toBe(
 			true
 		);
