@@ -309,11 +309,11 @@
 			<form class="join-form" onsubmit={join}>
 				<fieldset>
 					<legend>{copy.joinLegend}</legend>
-					<label>
+					<label class="join-choice">
 						<input type="radio" name="who" value="test_patient" bind:group={who} />
 						{copy.interest}
 					</label>
-					<label>
+					<label class="join-choice">
 						<input type="radio" name="who" value="clinic" bind:group={who} />
 						{copy.clinic}
 					</label>
